@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="2.css">
+    <title>Personal Page</title>
+</head>
+<body>
+    <header>
+  <a href="#" class="logo" style="font-family:verdana;">Manish</a>
+  <nav>
+    <a href="1.html" >Home</a>
+    <a href="resume.html" class="active">resume</a>
+    <a href="project.html">Projects</a>
+    <a href="contact.html">Contact</a>
+    <a href="login1.html" id="loginLink">Login</a>
+  </nav>
+</header>
+
+
+
+
+
+
+<script>
+  const loginLink = document.getElementById('loginLink');
+
+  loginLink.addEventListener('click', function(e) {
+    e.preventDefault(); 
+    document.body.classList.add('fade-out');
+    setTimeout(() => {
+      window.location.href = loginLink.href;
+    }, 500); 
+  });
+</script>
+</body>
+</html>

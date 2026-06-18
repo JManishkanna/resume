@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies | CineFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+
+<body>
+    <div class="cursor-ambient" aria-hidden="true"></div>
+    <div class="cursor-glow" aria-hidden="true"></div>
+    <div class="cursor"></div>
+
+    <nav class="navbar">
+        <div class="logo">Cine<span>Flow</span></div>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="movies.html" class="active">Movies</a></li>
+            <li><a href="theaters.html">Theaters</a></li>
+            <li><a href="bookings.html">My Bookings</a></li>
+            <li><a href="rewards.html" class="rewards-link">Rewards <span class="points-badge" style="background: linear-gradient(45deg, var(--primary), var(--secondary)); color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; margin-left: 5px; box-shadow: 0 0 10px rgba(0,242,255,0.4);">0 pts</span></a></li>
+        </ul>
+        <button class="btn-primary" onclick="goToPage('login.html')">Sign In</button>
+        <div class="hamburger" id="hamburger" onclick="toggleMobileNav()">
+            <span></span><span></span><span></span>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <h1>Explore Movies</h1>
+        <p>From blockbusters to indie gems, find your next favorite story.</p>
+    </header>
+
+    <section class="movies-section">
+        <div class="section-header">
+            <h2 id="movies-heading">All Movies</h2>
+
+            <div class="movie-search-wrap">
+                <i data-lucide="search" class="search-icon-inline"></i>
+                <input type="text" id="movie-search" class="movie-search-input" placeholder="Search by title..."
+                    oninput="handleMovieSearch(this.value)">
+                <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="filters" id="genre-filters"></div>
+        </div>
+
+        <p id="movie-result-count" style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1.5rem;"></p>
+
+        <div class="movie-grid" id="movie-grid">
+        </div>
+    </section>
+
+    <div id="booking-modal" class="modal">
+        <div class="modal-content glass">
+            <button class="close-modal"><i data-lucide="x"></i></button>
+            <div class="booking-container">
+                <div id="step-details" class="booking-view active">
+                    <div class="preview-bg-container">
+                        <img src="" id="preview-movie-bg" alt="bg" loading="lazy">
+                        <div class="preview-bg-overlay"></div>
+                    </div>
+                    <div class="movie-preview-content">
+                        <div class="preview-header">
+                            <h2 id="preview-movie-title">Movie Title</h2>
+                            <div class="preview-meta">
+                                <span id="preview-movie-rating"><i data-lucide="star"></i> 4.8</span>
+                                <span id="preview-movie-genre">Sci-Fi</span>
+                                <span id="preview-movie-duration"><i data-lucide="clock"></i> 2h 45m</span>
+                            </div>
+                        </div>
+
+                        <div class="preview-body">
+                            <div class="preview-section">
+                                <h3>About the Movie</h3>
+                                <p id="preview-movie-desc">Detailed movie description goes here...</p>
+                            </div>
+
+                            <div class="preview-section">
+                                <h3>Trailer</h3>
+                                <div class="trailer-wrapper" style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.35);">
+                                    <iframe id="preview-movie-trailer" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
+                                </div>
+                            </div>
+
+                            <div class="preview-section">
+                                <h3>Cast & Crew</h3>
+                                <div class="cast-list" id="preview-movie-cast">
+                                </div>
+                                <p class="director-info"><b>Director:</b> <span id="preview-movie-director">Name</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="preview-footer">
+                            <button class="btn-primary" onclick="switchStep('step-showtimes')">Proceed to Tickets
+                                -></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="step-showtimes" class="booking-view">
+                    <div class="date-selector" id="date-picker"></div>
+                    <div class="theaters-list" id="theater-list"></div>
+                </div>
+
+                <div id="step-seats" class="booking-view">
+                    <div class="seat-map-wrapper">
+                        <div class="seat-map-container" style="flex: 1;">
+                            <div class="screen-container">
+                                <h2 style="margin-bottom: 25px; font-weight: 700; text-align: center;">Select your seat
+                                </h2>
+                                <div class="screen-curve"></div>
+                                <div class="screen-text">SCREEN SIDE</div>
+                            </div>
+
+                            <div class="smart-selection-controls">
+                                <div class="smart-input-group">
+                                    <div class="smart-label">
+                                        <i data-lucide="zap"></i>
+                                        <span>Smart Selection</span>
+                                    </div>
+                                    <div class="smart-actions">
+                                        <input type="number" id="smart-seat-count" value="2" min="1" max="9">
+                                        <button class="btn-smart" onclick="triggerSmartSelect()">Auto Select Best
+                                            Seats</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="seat-sections" id="seat-sections-container"></div>
+
+                            <div class="legend" style="margin-top: 4rem;">
+                                <div class="legend-item"><span class="seat">A1</span> Available</div>
+                                <div class="legend-item"><span class="seat premium">P1</span> Premium (+₹50)</div>
+                                <div class="legend-item"><span class="seat couple">K1</span> Couple (2x Price)</div>
+                                <div class="legend-item"><span class="seat occupied"></span> Occupied</div>
+                                <div class="legend-item"><span class="seat selected">A1</span> Selected</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="booking-sidebar">
+                        <div id="selected-movie-info">
+                            <h2 id="modal-movie-title">Movie Title</h2>
+                            <p id="modal-movie-desc">Description</p>
+                            <p id="selected-theater-time"
+                                style="color: var(--primary); margin-top: 10px; font-weight: 600;"></p>
+                        </div>
+
+                        <div class="addons-section">
+                            <h4>Add-ons</h4>
+                            <div class="addons-grid" style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
+                                <div class="addon-card" onclick="toggleAddon(this, 150)">
+                                    <div class="addon-icon"><i data-lucide="popcorn"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Super Combo</h5>
+                                    </div>
+                                    <div class="addon-price">₹150</div>
+                                    <button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this, 120)">
+                                    <div class="addon-icon"><i data-lucide="utensils"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Cheese Nachos</h5>
+                                    </div>
+                                    <div class="addon-price">₹120</div>
+                                    <button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this, 90)">
+                                    <div class="addon-icon"><i data-lucide="coffee"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Cold Coffee</h5>
+                                    </div>
+                                    <div class="addon-price">₹90</div>
+                                    <button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this, 110)">
+                                    <div class="addon-icon"><i data-lucide="sandwich"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Sandwich</h5>
+                                    </div>
+                                    <div class="addon-price">₹110</div>
+                                    <button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this, 130)">
+                                    <div class="addon-icon"><i data-lucide="utensils"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Hot Dog</h5>
+                                    </div>
+                                    <div class="addon-price">₹130</div>
+                                    <button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this, 70)">
+                                    <div class="addon-icon"><i data-lucide="cup- soda"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Soft Drink</h5>
+                                    </div>
+                                    <div class="addon-price">₹70</div>
+                                    <button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this, 200)">
+                                    <div class="addon-icon"><i data-lucide="popcorn"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Popcorn Tub</h5>
+                                    </div>
+                                    <div class="addon-price">₹200</div>
+                                    <button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this, 180)">
+                                    <div class="addon-icon"><i data-lucide="package"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Meal Box</h5>
+                                    </div>
+                                    <div class="addon-price">₹180</div>
+                                    <button class="addon-action-btn">ADD</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="parking-section" style="margin-top: 20px;">
+                            <h4>Parking</h4>
+                            <div class="parking-options">
+                                <div class="parking-card" onclick="toggleParking(this, 'Bike', 30)">
+                                    <div class="parking-icon"><i data-lucide="bike"></i></div>
+                                    <span>Bike (₹30)</span>
+                                </div>
+                                <div class="parking-card" onclick="toggleParking(this, 'Car', 80)">
+                                    <div class="parking-icon"><i data-lucide="car"></i></div>
+                                    <span>Car (₹80)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="booking-summary">
+                            <div class="summary-row"><span>Seats:</span><span id="selected-seats-count">0</span></div>
+                            <div class="summary-row"><span>Add-ons:</span><span id="summary-addons-price">₹0</span>
+                            </div>
+                            <div class="summary-row"><span>Parking:</span><span id="summary-parking-price">₹0</span>
+                            </div>
+                            <div class="summary-row total"><span>Total:</span><span id="total-price">₹0</span></div>
+
+                            <div class="payment-methods" style="margin-top: 20px;">
+                                <h4>Payment Mode</h4>
+                                <div class="payment-grid">
+                                    <div class="payment-option active" onclick="selectPayment(this)">
+                                        <i data-lucide="smartphone"></i><span>UPI</span>
+                                    </div>
+                                    <div class="payment-option" onclick="selectPayment(this)">
+                                        <i data-lucide="credit-card"></i><span>Debit / Credit Card</span>
+                                    </div>
+                                    <div class="payment-option" onclick="selectPayment(this)">
+                                        <i data-lucide="landmark"></i><span>Net Banking</span>
+                                    </div>
+                                    <div class="payment-option" onclick="selectPayment(this)">
+                                        <i data-lucide="banknote"></i><span>Cash on Spot</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn-primary full-width" id="confirm-booking"
+                                style="margin-top: 2rem;">Proceed to Checkout -></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="payment-modal" class="modal">
+        <div class="modal-content glass" style="max-width: 500px;">
+            <button class="close-modal" onclick="closeModal('payment-modal')"><i data-lucide="x"></i></button>
+            <div class="checkout-header">
+                <h2>Checkout</h2>
+                <p id="checkout-summary-text">Summary of your booking</p>
+            </div>
+
+            <div class="payment-details-container">
+                <div id="upi-form" class="payment-form active">
+                    <div class="input-group">
+                        <label>Enter UPI ID</label>
+                        <input type="text" placeholder="example@upi" id="upi-id">
+                        <small style="color: var(--text-dim); margin-top: 5px; display: block;">Pay instantly using your bank UPI handle.</small>
+                    </div>
+                </div>
+
+                <div id="card-form" class="payment-form">
+                    <div class="input-group">
+                        <label>Card Number</label>
+                        <input type="text" placeholder="0000 0000 0000 0000" maxlength="19" id="card-number">
+                    </div>
+                    <div class="input-row" style="display: flex; gap: 1rem;">
+                        <input type="text" placeholder="MM/YY" maxlength="5" style="flex:1" id="card-expiry">
+                        <input type="password" placeholder="CVV" maxlength="4" style="flex:1" id="card-cvv">
+                    </div>
+                    <div class="input-group" style="margin-top: 12px;">
+                        <label>Name on Card</label>
+                        <input type="text" placeholder="CARDHOLDER NAME" id="card-holder">
+                    </div>
+                </div>
+
+                <div id="banking-form" class="payment-form">
+                    <div class="input-group">
+                        <label>Select Bank</label>
+                        <select id="bank-select" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; padding: 12px; border-radius: 10px; outline: none;">
+                            <option value="" disabled selected>-- Choose your bank --</option>
+                            <option value="hdfc">HDFC Bank</option>
+                            <option value="sbi">State Bank of India</option>
+                            <option value="icici">ICICI Bank</option>
+                            <option value="axis">Axis Bank</option>
+                            <option value="kotak">Kotak Mahindra Bank</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="margin-top: 15px; background: rgba(0,242,255,0.05); padding: 10px; border-radius: 8px; font-size: 0.85rem; color: var(--primary);">
+                        <i data-lucide="shield-check" style="width: 14px; vertical-align: middle;"></i> You will be redirected to your bank's secure payment gateway.
+                    </div>
+                </div>
+
+                <div id="cash-form" class="payment-form">
+                    <div class="input-group" style="text-align: center; padding: 20px;">
+                        <i data-lucide="hand-coins" style="width: 48px; height: 48px; color: gold; margin-bottom: 15px;"></i>
+                        <h3 style="margin-bottom: 10px;">Pay at Counter</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-dim); line-height: 1.5;">
+                            Reserve your seats now and pay when you arrive at the theater. <strong style="color: #ff4d4f;">A service charge of ₹50 per ticket applies.</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="checkout-footer" style="margin-top: 2rem;">
+                <div class="final-price"><span>Payable Amount:</span>
+                    <h3 id="final-payable-amount">₹0</h3>
+                </div>
+                <button class="btn-primary full-width" id="final-pay-btn" onclick="processFinalPayment()">Pay
+                    Now</button>
+            </div>
+
+            <div id="payment-success" class="payment-success-view">
+                <div class="success-icon"><i data-lucide="check-circle-2"></i></div>
+                <h2>Booking Confirmed!</h2>
+
+                <div class="printable-ticket" id="ticket-to-print">
+                    <img src="" id="print-banner-img" alt="banner" loading="lazy">
+                    <div class="print-overlay"></div>
+                    <div class="print-content">
+                        <div class="print-left">
+                            <p class="print-tag" id="print-experience">Premium Experience</p>
+                            <h3 class="print-title" id="print-movie-title">Movie Title</h3>
+                            <div class="print-info-grid">
+                                <div class="print-info-item"><i data-lucide="calendar"></i><span
+                                        id="print-date">Date</span></div>
+                                <div class="print-info-item"><i data-lucide="clock"></i><span
+                                        id="print-time">Time</span></div>
+                                <div class="print-info-item"><i data-lucide="map-pin"></i><span
+                                        id="print-theater">Theater</span></div>
+                            </div>
+                            <div class="print-info-grid">
+                                <div class="print-info-item"><i data-lucide="armchair"></i><span>SEATS: </span><span
+                                        id="print-seats"></span></div>
+                                <div class="print-info-item"><i data-lucide="hash"></i><span
+                                        id="print-ticket-id"></span></div>
+                            </div>
+                            <div id="print-addons-list" class="print-addons-ticket"></div>
+                        </div>
+                        <div class="print-right">
+                            <span class="status-pill">CONFIRMED</span>
+                            <div class="print-qr-container" id="print-qr"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button class="btn-primary full-width" onclick="saveTicket()"><i data-lucide="download"></i> Save
+                        Ticket</button>
+                    <button class="btn-outline full-width" onclick="location.reload()">Back to Home</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">Cine<span>Flow</span></div>
+            <p>&copy; 2026 CineFlow. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="cursor-effect.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+
+</html>

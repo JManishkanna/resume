@@ -1,0 +1,17 @@
+{
+  "name": "cineflow",
+  "version": "1.0.0",
+  "description": "Movie booking app with MongoDB backend",
+  "main": "server.js",
+  "scripts": {},
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.2",
+    "mongoose": "^7.0.0",
+    "puppeteer": "^24.40.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

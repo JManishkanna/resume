@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineFlow - Movie Booking System PPT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .ppt-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .slide {
+            min-height: 600px;
+            padding: 60px;
+            display: none;
+            position: relative;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        .slide-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .slide-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .slide-subtitle {
+            font-size: 1.2em;
+            color: #7f8c8d;
+            font-weight: 300;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .content-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .content-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .content-list li {
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .content-list li::before {
+            content: "▶";
+            color: #3498db;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .code-snippet {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .diagram-placeholder {
+            background: #ecf0f1;
+            border: 2px dashed #bdc3c7;
+            border-radius: 10px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            color: #7f8c8d;
+            margin: 20px 0;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background: rgba(255,255,255,0.9);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .slide-counter {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tech-item {
+            background: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide.active .slide-header,
+        .slide.active .content-section,
+        .slide.active .diagram-placeholder {
+            animation: fadeIn 0.8s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="ppt-container">
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active" id="slide1">
+            <div class="slide-counter">1 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">CineFlow</div>
+                <div class="slide-subtitle">Movie Booking & Streaming Platform</div>
+                <div style="margin-top: 30px; font-size: 1.1em; color: #34495e;">
+                    A Comprehensive Web Application for Cinema Entertainment
+                </div>
+                <div style="margin-top: 40px; font-size: 0.9em; color: #7f8c8d;">
+                    Presented by: [Your Name]<br>
+                    College: [Your College Name]<br>
+                    Date: April 2026
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 60px;">
+                <div style="font-size: 4em; color: #3498db;">🎬</div>
+                <div style="margin-top: 20px; font-size: 1.2em; color: #2c3e50; font-weight: 600;">
+                    "Bringing Cinema to Your Fingertips"
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Project Overview -->
+        <div class="slide" id="slide2">
+            <div class="slide-counter">2 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">Project Overview</div>
+                <div class="slide-subtitle">Understanding CineFlow's Purpose & Scope</div>
+            </div>
+            <div class="content-grid">
+                <div class="content-section">
+                    <div class="section-title">🎯 Project Objectives</div>
+                    <ul class="content-list">
+                        <li>Develop a full-stack movie booking platform</li>
+                        <li>Implement modern web technologies</li>
+                        <li>Create intuitive user experience</li>
+                        <li>Enable seamless booking workflow</li>
+                        <li>Provide admin management capabilities</li>
+                    </ul>
+                </div>
+                <div class="content-section">
+                    <div class="section-title">📊 Key Features</div>
+                    <ul class="content-list">
+                        <li>Movie catalog with hero banners</li>
+                        <li>Interactive theater selection</li>
+                        <li>Real-time seat booking</li>
+                        <li>Payment gateway integration</li>
+                        <li>OTT streaming packages</li>
+                        <li>Loyalty rewards program</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: System Architecture -->
+        <div class="slide" id="slide3">
+            <div class="slide-counter">3 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">System Architecture</div>
+                <div class="slide-subtitle">3-Tier Web Application Design</div>
+            </div>
+            <div class="diagram-placeholder">
+                [3-Tier Architecture Diagram]<br>
+                Presentation → Application → Data Layer
+            </div>
+            <div class="content-grid">
+                <div class="content-section">
+                    <div class="section-title">🖥️ Presentation Layer</div>
+                    <ul class="content-list">
+                        <li>HTML5, CSS3, Vanilla JavaScript</li>
+                        <li>Responsive design (Mobile + Desktop)</li>
+                        <li>Interactive UI with animations</li>
+                        <li>Client-side data storage (localStorage)</li>
+                    </ul>
+                </div>
+                <div class="content-section">
+                    <div class="section-title">⚙️ Application Layer</div>
+                    <ul class="content-list">
+                        <li>Node.js + Express.js backend</li>
+                        <li>RESTful API endpoints</li>
+                        <li>JSON data communication</li>
+                        <li>CORS enabled for frontend access</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="content-section" style="margin-top: 20px;">
+                <div class="section-title">🗄️ Data Layer</div>
+                <ul class="content-list" style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    <li>MongoDB NoSQL Database</li>
+                    <li>Mongoose ODM for schemas</li>
+                    <li>Collections: Movies, Theaters, Bookings</li>
+                    <li>Client-side: Users, OTT Packages</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 4: Technology Stack -->
+        <div class="slide" id="slide4">
+            <div class="slide-counter">4 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">Technology Stack</div>
+                <div class="slide-subtitle">Modern Web Development Technologies</div>
+            </div>
+            <div class="tech-stack">
+                <div class="tech-item">Node.js</div>
+                <div class="tech-item">Express.js</div>
+                <div class="tech-item">MongoDB</div>
+                <div class="tech-item">Mongoose</div>
+                <div class="tech-item">HTML5</div>
+                <div class="tech-item">CSS3</div>
+                <div class="tech-item">JavaScript ES6+</div>
+                <div class="tech-item">localStorage</div>
+                <div class="tech-item">Google Fonts</div>
+                <div class="tech-item">Mermaid.js</div>
+            </div>
+            <div class="content-grid" style="margin-top: 40px;">
+                <div class="content-section">
+                    <div class="section-title">🔧 Backend Technologies</div>
+                    <ul class="content-list">
+                        <li><span class="highlight">Node.js</span> - JavaScript runtime</li>
+                        <li><span class="highlight">Express.js</span> - Web framework</li>
+                        <li><span class="highlight">MongoDB</span> - Document database</li>
+                        <li><span class="highlight">Mongoose</span> - ODM for data modeling</li>
+                        <li><span class="highlight">dotenv</span> - Environment variables</li>
+                    </ul>
+                </div>
+                <div class="content-section">
+                    <div class="section-title">🎨 Frontend Technologies</div>
+                    <ul class="content-list">
+                        <li><span class="highlight">HTML5</span> - Semantic markup</li>
+                        <li><span class="highlight">CSS3</span> - Styling & animations</li>
+                        <li><span class="highlight">Vanilla JS</span> - No frameworks</li>
+                        <li><span class="highlight">localStorage</span> - Client storage</li>
+                        <li><span class="highlight">Google Fonts</span> - Typography</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Database Design -->
+        <div class="slide" id="slide5">
+            <div class="slide-counter">5 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">Database Design</div>
+                <div class="slide-subtitle">Entity-Relationship Model & Schema</div>
+            </div>
+            <div class="diagram-placeholder">
+                [ER Diagram Visualization]<br>
+                User → Booking ← Movie<br>
+                Theater → Booking
+            </div>
+            <div class="content-grid">
+                <div class="content-section">
+                    <div class="section-title">📋 Entity Relationships</div>
+                    <ul class="content-list">
+                        <li><strong>User</strong> (1) → (N) <strong>Booking</strong></li>
+                        <li><strong>Movie</strong> (1) → (N) <strong>Booking</strong></li>
+                        <li><strong>Theater</strong> (1) → (N) <strong>Booking</strong></li>
+                        <li><strong>OTTPack</strong> - Client-side only</li>
+                    </ul>
+                </div>
+                <div class="content-section">
+                    <div class="section-title">🗂️ Key Collections</div>
+                    <ul class="content-list">
+                        <li><strong>Movies:</strong> Title, genre, cast, pricing</li>
+                        <li><strong>Theaters:</strong> Location, features, showtimes</li>
+                        <li><strong>Bookings:</strong> User, movie, seats, payment</li>
+                        <li><strong>Users:</strong> Client-side storage</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: API Design -->
+        <div class="slide" id="slide6">
+            <div class="slide-counter">6 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">API Design</div>
+                <div class="slide-subtitle">RESTful Endpoints & Data Flow</div>
+            </div>
+            <div class="code-snippet">
+GET  /api/movies     → Fetch all movies<br>
+GET  /api/theaters   → Fetch all theaters<br>
+GET  /api/bookings   → Fetch all bookings<br>
+POST /api/bookings   → Create new booking
+            </div>
+            <div class="content-grid">
+                <div class="content-section">
+                    <div class="section-title">🔄 HTTP Methods</div>
+                    <ul class="content-list">
+                        <li><span class="highlight">GET</span> - Retrieve data</li>
+                        <li><span class="highlight">POST</span> - Create resources</li>
+                        <li><span class="highlight">PUT</span> - Update resources</li>
+                        <li><span class="highlight">DELETE</span> - Remove resources</li>
+                    </ul>
+                </div>
+                <div class="content-section">
+                    <div class="section-title">📡 Response Format</div>
+                    <ul class="content-list">
+                        <li>JSON data structure</li>
+                        <li>HTTP status codes</li>
+                        <li>Error handling</li>
+                        <li>CORS enabled</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: User Workflow -->
+        <div class="slide" id="slide7">
+            <div class="slide-counter">7 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">User Workflow</div>
+                <div class="slide-subtitle">Complete Booking Journey</div>
+            </div>
+            <div class="diagram-placeholder">
+                [User Journey Flowchart]<br>
+                Browse → Select → Book → Pay → Confirm
+            </div>
+            <div class="content-section">
+                <div class="section-title">🎭 Booking Process Steps</div>
+                <ul class="content-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <li><strong>1. Movie Selection</strong><br>Browse catalog, view details</li>
+                    <li><strong>2. Theater Choice</strong><br>Select location & showtime</li>
+                    <li><strong>3. Seat Selection</strong><br>Interactive seat map</li>
+                    <li><strong>4. Add-ons</strong><br>Parking, concessions</li>
+                    <li><strong>5. Payment</strong><br>Gateway integration</li>
+                    <li><strong>6. Confirmation</strong><br>Booking details & receipt</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 8: Key Features -->
+        <div class="slide" id="slide8">
+            <div class="slide-counter">8 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">Key Features</div>
+                <div class="slide-subtitle">Core Functionality Showcase</div>
+            </div>
+            <div class="content-grid">
+                <div class="content-section">
+                    <div class="section-title">🎬 Movie Features</div>
+                    <ul class="content-list">
+                        <li>Hero movie banner display</li>
+                        <li>Genre-based filtering</li>
+                        <li>Movie details & trailers</li>
+                        <li>Rating & review system</li>
+                        <li>Search functionality</li>
+                    </ul>
+                </div>
+                <div class="content-section">
+                    <div class="section-title">🎭 Theater Features</div>
+                    <ul class="content-list">
+                        <li>Location-based search</li>
+                        <li>Feature comparison (IMAX, Dolby)</li>
+                        <li>Showtime availability</li>
+                        <li>Rating & reviews</li>
+                        <li>Distance calculation</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="content-grid" style="margin-top: 20px;">
+                <div class="content-section">
+                    <div class="section-title">💺 Booking Features</div>
+                    <ul class="content-list">
+                        <li>Interactive seat selection</li>
+                        <li>Real-time availability</li>
+                        <li>Add-on services</li>
+                        <li>Loyalty points system</li>
+                        <li>Booking history</li>
+                    </ul>
+                </div>
+                <div class="content-section">
+                    <div class="section-title">👤 User Features</div>
+                    <ul class="content-list">
+                        <li>3D login interface</li>
+                        <li>Profile management</li>
+                        <li>Booking notifications</li>
+                        <li>Account preferences</li>
+                        <li>Password security</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Admin Dashboard -->
+        <div class="slide" id="slide9">
+            <div class="slide-counter">9 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">Admin Dashboard</div>
+                <div class="slide-subtitle">Content Management & Analytics</div>
+            </div>
+            <div class="diagram-placeholder">
+                [Admin Dashboard Mockup]<br>
+                Statistics + Management Tools
+            </div>
+            <div class="content-grid">
+                <div class="content-section">
+                    <div class="section-title">📊 Analytics & Reports</div>
+                    <ul class="content-list">
+                        <li>Total bookings overview</li>
+                        <li>Revenue tracking</li>
+                        <li>Popular movies analysis</li>
+                        <li>Theater utilization</li>
+                        <li>User engagement metrics</li>
+                    </ul>
+                </div>
+                <div class="content-section">
+                    <div class="section-title">⚙️ Management Tools</div>
+                    <ul class="content-list">
+                        <li>Movie CRUD operations</li>
+                        <li>Theater management</li>
+                        <li>Content moderation</li>
+                        <li>User administration</li>
+                        <li>System configuration</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: OTT Integration -->
+        <div class="slide" id="slide10">
+            <div class="slide-counter">10 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">OTT Integration</div>
+                <div class="slide-subtitle">Streaming Platform Features</div>
+            </div>
+            <div class="content-section">
+                <div class="section-title">📺 Subscription Packages</div>
+                <ul class="content-list" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                    <li><strong>Basic Stream</strong><br>720p, 1 screen, ₹199</li>
+                    <li><strong>Premium Cine</strong><br>4K HDR, 4 screens, ₹499</li>
+                    <li><strong>Ultimate OTT</strong><br>UHD+, Unlimited, ₹999</li>
+                </ul>
+            </div>
+            <div class="content-grid" style="margin-top: 30px;">
+                <div class="content-section">
+                    <div class="section-title">🎯 OTT Features</div>
+                    <ul class="content-list">
+                        <li>Multiple quality options</li>
+                        <li>Screen limitations</li>
+                        <li>Ad-free experience</li>
+                        <li>Early access content</li>
+                        <li>Spatial audio support</li>
+                    </ul>
+                </div>
+                <div class="content-section">
+                    <div class="section-title">🔗 Integration Points</div>
+                    <ul class="content-list">
+                        <li>Unified user accounts</li>
+                        <li>Seamless transitions</li>
+                        <li>Shared recommendations</li>
+                        <li>Combined billing</li>
+                        <li>Cross-platform access</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Security & Performance -->
+        <div class="slide" id="slide11">
+            <div class="slide-counter">11 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">Security & Performance</div>
+                <div class="slide-subtitle">System Reliability & Protection</div>
+            </div>
+            <div class="content-grid">
+                <div class="content-section">
+                    <div class="section-title">🔒 Security Measures</div>
+                    <ul class="content-list">
+                        <li>Input validation & sanitization</li>
+                        <li>CORS configuration</li>
+                        <li>Data encryption in transit</li>
+                        <li>Secure payment processing</li>
+                        <li>Client-side data protection</li>
+                    </ul>
+                </div>
+                <div class="content-section">
+                    <div class="section-title">⚡ Performance Optimization</div>
+                    <ul class="content-list">
+                        <li>localStorage caching</li>
+                        <li>Efficient database queries</li>
+                        <li>Responsive design</li>
+                        <li>Optimized images</li>
+                        <li>Minimal JavaScript bundle</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="content-section" style="margin-top: 20px;">
+                <div class="section-title">🚀 Scalability Features</div>
+                <ul class="content-list" style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    <li>Modular architecture</li>
+                    <li>RESTful API design</li>
+                    <li>Database indexing</li>
+                    <li>CDN integration ready</li>
+                    <li>Microservices potential</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 12: Testing & Quality -->
+        <div class="slide" id="slide12">
+            <div class="slide-counter">12 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">Testing & Quality</div>
+                <div class="slide-subtitle">Quality Assurance & Validation</div>
+            </div>
+            <div class="content-grid">
+                <div class="content-section">
+                    <div class="section-title">🧪 Testing Types</div>
+                    <ul class="content-list">
+                        <li><span class="highlight">Unit Testing</span> - Component validation</li>
+                        <li><span class="highlight">Integration Testing</span> - API endpoints</li>
+                        <li><span class="highlight">System Testing</span> - End-to-end flows</li>
+                        <li><span class="highlight">User Acceptance Testing</span> - Real scenarios</li>
+                        <li><span class="highlight">Performance Testing</span> - Load handling</li>
+                    </ul>
+                </div>
+                <div class="content-section">
+                    <div class="section-title">📋 Quality Metrics</div>
+                    <ul class="content-list">
+                        <li>Code coverage > 80%</li>
+                        <li>Response time < 2s</li>
+                        <li>Cross-browser compatibility</li>
+                        <li>Mobile responsiveness</li>
+                        <li>Accessibility compliance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Challenges & Solutions -->
+        <div class="slide" id="slide13">
+            <div class="slide-counter">13 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">Challenges & Solutions</div>
+                <div class="slide-subtitle">Development Insights & Learnings</div>
+            </div>
+            <div class="content-grid">
+                <div class="content-section">
+                    <div class="section-title">⚠️ Technical Challenges</div>
+                    <ul class="content-list">
+                        <li>Real-time seat availability</li>
+                        <li>Complex booking workflows</li>
+                        <li>Payment gateway integration</li>
+                        <li>Cross-browser compatibility</li>
+                        <li>Performance optimization</li>
+                    </ul>
+                </div>
+                <div class="content-section">
+                    <div class="section-title">💡 Solutions Implemented</div>
+                    <ul class="content-list">
+                        <li>Optimistic UI updates</li>
+                        <li>Modular component design</li>
+                        <li>Secure API communication</li>
+                        <li>CSS Grid & Flexbox</li>
+                        <li>localStorage caching</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Future Enhancements -->
+        <div class="slide" id="slide14">
+            <div class="slide-counter">14 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">Future Enhancements</div>
+                <div class="slide-subtitle">Roadmap & Expansion Plans</div>
+            </div>
+            <div class="content-grid">
+                <div class="content-section">
+                    <div class="section-title">🚀 Short-term Goals</div>
+                    <ul class="content-list">
+                        <li>JWT authentication system</li>
+                        <li>Real-time notifications</li>
+                        <li>Mobile app development</li>
+                        <li>Advanced search filters</li>
+                        <li>Social media integration</li>
+                    </ul>
+                </div>
+                <div class="content-section">
+                    <div class="section-title">🎯 Long-term Vision</div>
+                    <ul class="content-list">
+                        <li>AI-powered recommendations</li>
+                        <li>Blockchain ticketing</li>
+                        <li>VR theater experience</li>
+                        <li>Global expansion</li>
+                        <li>IoT device integration</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Conclusion -->
+        <div class="slide" id="slide15">
+            <div class="slide-counter">15 / 15</div>
+            <div class="slide-header">
+                <div class="slide-title">Conclusion</div>
+                <div class="slide-subtitle">Project Summary & Achievements</div>
+            </div>
+            <div class="content-section" style="text-align: center; margin-top: 40px;">
+                <div style="font-size: 1.3em; margin-bottom: 30px; color: #2c3e50;">
+                    CineFlow represents a comprehensive solution for modern movie entertainment,
+                    combining traditional cinema booking with streaming capabilities.
+                </div>
+                <div class="tech-stack" style="justify-content: center;">
+                    <div class="tech-item">✅ Full-Stack Development</div>
+                    <div class="tech-item">✅ Modern UI/UX</div>
+                    <div class="tech-item">✅ Scalable Architecture</div>
+                    <div class="tech-item">✅ Real-world Application</div>
+                </div>
+                <div style="margin-top: 40px; font-size: 1.1em; color: #34495e;">
+                    <strong>Key Achievements:</strong><br>
+                    • Complete movie booking system with payment integration<br>
+                    • Responsive design supporting all devices<br>
+                    • RESTful API with comprehensive endpoints<br>
+                    • Admin dashboard for content management<br>
+                    • OTT streaming platform integration
+                </div>
+                <div style="margin-top: 40px; font-size: 2em; color: #3498db;">
+                    🎉 Thank You! 🎉
+                </div>
+                <div style="margin-top: 20px; font-size: 0.9em; color: #7f8c8d;">
+                    Questions & Feedback Welcome
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" onclick="previousSlide()">← Previous</button>
+        <span id="slideIndicator">1 / 15</span>
+        <button class="nav-btn" onclick="nextSlide()">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 15;
+
+        function showSlide(slideNumber) {
+            // Hide all slides
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+
+            // Show current slide
+            document.getElementById(`slide${slideNumber}`).classList.add('active');
+
+            // Update slide indicator
+            document.getElementById('slideIndicator').textContent = `${slideNumber} / ${totalSlides}`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight' || event.key === ' ') {
+                nextSlide();
+            } else if (event.key === 'ArrowLeft') {
+                previousSlide();
+            }
+        });
+
+        // Initialize first slide
+        showSlide(1);
+    </script>
+</body>
+</html></content>
+<parameter name="filePath">e:\New folder (2)\project 1\cineflow_presentation.html

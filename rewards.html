@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loyalty & Rewards | CineFlow</title>
+    <meta name="description" content="Redeem your CineFlow points for free popcorn, ticket discounts, and exclusive merchandise.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        .rewards-section {
+            padding: 2rem 5% 8rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .points-dashboard {
+            background: linear-gradient(135deg, rgba(0, 242, 255, 0.1), rgba(112, 0, 255, 0.1));
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            border-radius: 24px;
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 4rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .points-dashboard::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(0,242,255,0.05) 0%, transparent 60%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .points-dashboard > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .points-dashboard h2 {
+            font-size: 1.5rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+
+        .total-points {
+            font-size: 5rem;
+            font-weight: 900;
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(to right, var(--primary), #fff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
+        }
+
+        .points-info {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+        }
+
+        .reward-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .reward-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .reward-card.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reward-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 35px rgba(0, 242, 255, 0.15);
+            background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent);
+        }
+
+        .reward-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(0, 242, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 2.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .reward-card:hover .reward-icon {
+            transform: scale(1.1) rotate(5deg);
+            background: var(--primary);
+            color: var(--bg-dark);
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        .reward-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .cost {
+            display: inline-block;
+            background: rgba(112, 0, 255, 0.2);
+            border: 1px solid var(--secondary);
+            color: #d1a8ff;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+        }
+
+        .reward-card p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            flex-grow: 1;
+            line-height: 1.6;
+        }
+        
+        .redeem-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .redeem-btn:disabled {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            cursor: not-allowed;
+            border: 1px solid var(--glass-border);
+            box-shadow: none;
+        }
+
+        @media (max-width: 600px) {
+            .total-points { font-size: 3.5rem; }
+            .points-dashboard { padding: 2rem 1.5rem; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cursor-ambient" aria-hidden="true"></div>
+    <div class="cursor-glow" aria-hidden="true"></div>
+    <div class="cursor"></div>
+    <nav class="navbar">
+        <div class="logo">Cine<span>Flow</span></div>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="movies.html">Movies</a></li>
+            <li><a href="theaters.html">Theaters</a></li>
+            <li><a href="bookings.html">My Bookings</a></li>
+            <li><a href="rewards.html" class="active">Rewards <span class="points-badge" style="background: linear-gradient(45deg, var(--primary), var(--secondary)); color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; margin-left: 5px; box-shadow: 0 0 10px rgba(0,242,255,0.4);">0 pts</span></a></li>
+        </ul>
+        <button class="btn-primary" onclick="goToPage('login.html')">Sign In</button>
+        <div class="hamburger" id="hamburger" onclick="toggleMobileNav()">
+            <span></span><span></span><span></span>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <h1>CineFlow Rewards</h1>
+        <p>Earn points with every movie booking and unlock exclusive cinematic perks.</p>
+    </header>
+
+    <section class="rewards-section">
+        <div class="points-dashboard">
+            <h2>Your Pending Points Balance</h2>
+            <div class="total-points" id="display-points">0</div>
+            <p class="points-info"><i data-lucide="info" style="width: 16px; display:inline-block; vertical-align: middle;"></i> You earn <b>10 Points</b> for every ₹100 spent on tickets and addons!</p>
+        </div>
+
+        <div class="section-header" style="margin-bottom: 2rem;">
+            <h2>Redeem Rewards</h2>
+        </div>
+
+        <div class="reward-grid">
+            <div class="reward-card reveal">
+                <div class="reward-icon"><i data-lucide="popcorn"></i></div>
+                <h3>Free Popcorn Tub</h3>
+                <div class="cost">500 PTS</div>
+                <p>Craving a snack? Redeem your points for a large bucket of our classic salted or caramel popcorn on your next visit.</p>
+                <button class="btn-primary redeem-btn" onclick="redeemReward('Popcorn', 500)" data-cost="500">Redeem Now</button>
+            </div>
+
+            <div class="reward-card reveal">
+                <div class="reward-icon"><i data-lucide="ticket"></i></div>
+                <h3>₹150 Ticket Discount</h3>
+                <div class="cost">1000 PTS</div>
+                <p>Apply a flat ₹150 discount to your cart total on your next movie ticket purchase through the CineFlow app.</p>
+                <button class="btn-primary redeem-btn" onclick="redeemReward('Ticket Discount', 1000)" data-cost="1000">Redeem Now</button>
+            </div>
+
+            <div class="reward-card reveal">
+                <div class="reward-icon"><i data-lucide="shirt"></i></div>
+                <h3>Exclusive Merch T-Shirt</h3>
+                <div class="cost">2500 PTS</div>
+                <p>Show off your love for cinema with an exclusive, limited-edition CineFlow aesthetic graphic T-Shirt.</p>
+                <button class="btn-primary redeem-btn" onclick="redeemReward('Merchandise', 2500)" data-cost="2500">Redeem Now</button>
+            </div>
+            
+            <div class="reward-card reveal">
+                <div class="reward-icon"><i data-lucide="crown"></i></div>
+                <h3>Free Premium Upgrade</h3>
+                <div class="cost">1500 PTS</div>
+                <p>Upgrade 2 standard tickets to Premium Recliners completely free of charge. Experience true luxury!</p>
+                <button class="btn-primary redeem-btn" onclick="redeemReward('Premium Upgrade', 1500)" data-cost="1500">Redeem Now</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">Cine<span>Flow</span></div>
+            <p>&copy; 2026 CineFlow. Designed for the ultimate experience.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="cursor-effect.js"></script>
+    <script>
+        lucide.createIcons();
+        
+        function updateRewardsPage() {
+            let pts = parseInt(localStorage.getItem('cineflow_loyalty_points')) || 0;
+            document.getElementById('display-points').innerText = pts;
+            
+            document.querySelectorAll('.redeem-btn').forEach(btn => {
+                const cost = parseInt(btn.getAttribute('data-cost'));
+                if(pts >= cost) {
+                    btn.disabled = false;
+                    btn.innerText = "Redeem Now";
+                } else {
+                    btn.disabled = true;
+                    btn.innerText = `Need ${cost - pts} more pts`;
+                }
+            });
+        }
+        
+        function redeemReward(rewardName, cost) {
+            let pts = parseInt(localStorage.getItem('cineflow_loyalty_points')) || 0;
+            if (pts >= cost) {
+                if(confirm(`Are you sure you want to spend ${cost} points to redeem ${rewardName}?`)) {
+                    pts -= cost;
+                    localStorage.setItem('cineflow_loyalty_points', pts);
+                    updatePointsUI(); 
+                    updateRewardsPage();
+                    let redeemed = JSON.parse(localStorage.getItem('cineflow_redeemed') || '[]');
+                    redeemed.push(rewardName);
+                    localStorage.setItem('cineflow_redeemed', JSON.stringify(redeemed));
+                    
+                    alert(`Success! You have redeemed: ${rewardName}. It has been added to your account!`);
+                }
+            }
+        }
+        
+        // Custom reveal effect logic for this page
+        setTimeout(() => {
+            document.querySelectorAll('.reward-card').forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('reveal');
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        }, 100);
+        updateRewardsPage();
+        window.addEventListener('storage', updateRewardsPage);
+    </script>
+</body>
+
+</html>

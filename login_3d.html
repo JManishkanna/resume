@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineFlow 3D Experience</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="cursor-effect.css">
+    <style>
+        :root {
+            --primary: #00f2ff;
+            --secondary: #7c3aed;
+            --bg: #05040a;
+            --glass: rgba(20, 20, 35, 0.4);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #canvas-container {
+            position: center;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 200%;
+            z-index: 1;
+        }
+
+        .login-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            perspective: 1000px;
+        }
+
+        /* Glassmorphism Card 2.0 */
+        .glass-card {
+            background: rgba(10, 10, 15, 0.3);
+            /* More transparent */
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 40px 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            transform-style: preserve-3d;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) rotateX(0);
+            }
+
+            50% {
+                transform: translateY(-15px) rotateX(2deg);
+            }
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #a5a5a5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .brand span {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            color: #fff;
+            font-family: inherit;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+            background: rgba(0, 242, 255, 0.05);
+        }
+
+        .input-group label {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.4);
+            pointer-events: none;
+            transition: 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .input-group input:focus+label,
+        .input-group input:not(:placeholder-shown)+label {
+            top: 0;
+            background: var(--bg);
+            padding: 0 5px;
+            font-size: 0.75rem;
+            color: var(--primary);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3);
+        }
+
+        .btn-login:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 242, 255, 0.4);
+        }
+
+        .socials {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .soc-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .soc-btn:hover {
+            background: #fff;
+            color: #000;
+            transform: translateY(-5px);
+        }
+
+        /* 3D Scene Controls */
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 20;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cursor-ambient" aria-hidden="true"></div>
+    <div class="cursor-glow" aria-hidden="true"></div>
+    <div class="cursor"></div>
+
+    <div id="canvas-container"></div>
+
+    <div class="login-wrapper">
+        <div class="glass-card">
+            <div class="brand">
+                <h1>Cine<span>Flow</span></h1>
+            </div>
+
+            <form id="loginForm">
+                <div class="input-group">
+                    <input type="email" id="email" placeholder=" " required>
+                    <label>Email Address</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" id="password" placeholder=" " required>
+                    <label>Password</label>
+                </div>
+
+                <div
+                    style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 0.85rem; color: #aaa;">
+                    <label style="display: flex; align-items: center; gap: 5px;">
+                        <input type="checkbox" style="accent-color: var(--primary);"> Remember me
+                    </label>
+                    <a href="#" style="color: var(--primary); text-decoration: none;">Forgot?</a>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">Enter Universe</button>
+
+                <div class="socials">
+                    <div class="soc-btn">G</div>
+                    <div class="soc-btn">A</div>
+                    <div class="soc-btn">F</div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- <div class="controls">
+        <button class="control-btn" onclick="toggleAnimation()">Pause 3D</button>
+    </div> -->
+
+    <script>
+        const canvasContainer = document.getElementById('canvas-container');
+
+        // Scene
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x05040a, 0.0015);
+
+        // Camera
+        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 25;
+
+        // Renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        canvasContainer.appendChild(renderer.domElement);
+
+        // --- TEXTURE GENERATORS ------------------------------------------------
+
+        function createStripedTexture(col1, col2, vertical = true) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = col1;
+            ctx.fillRect(0, 0, 512, 512);
+
+            ctx.fillStyle = col2;
+            if (vertical) {
+                for (let i = 0; i < 512; i += 64) ctx.fillRect(i, 0, 32, 512);
+            } else {
+                for (let i = 0; i < 512; i += 64) ctx.fillRect(0, i, 512, 32); // Chevronish if rotated? No just horiz
+            }
+
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+
+        // --- CINEMA OBJECTS ----------------------------------------------------
+
+        const cinemaObjects = [];
+
+        // 1. Popcorn Bucket
+        function createPopcornBucket() {
+            const group = new THREE.Group();
+
+            // Bucket
+            const tex = createStripedTexture('#ff2d55', '#ffffff', true);
+            const bucketGeo = new THREE.CylinderGeometry(2, 1.5, 5, 32, 1, true); // Openended? No, lets close it
+            const bucketMat = new THREE.MeshPhysicalMaterial({ map: tex, side: THREE.DoubleSide });
+            const bucket = new THREE.Mesh(bucketGeo, bucketMat);
+            group.add(bucket);
+
+            // Popcorn Pile
+            const popMat = new THREE.MeshStandardMaterial({ color: 0xfffdd0, roughness: 0.8 });
+            const popGeo = new THREE.DodecahedronGeometry(0.3); // Low poly ball
+
+            for (let i = 0; i < 30; i++) {
+                const mesh = new THREE.Mesh(popGeo, popMat);
+                mesh.position.y = 2.5 + Math.random();
+                mesh.position.x = (Math.random() - 0.5) * 3;
+                mesh.position.z = (Math.random() - 0.5) * 3;
+                // Keep inside radius roughly
+                if (mesh.position.x ** 2 + mesh.position.z ** 2 > 3) continue;
+
+                mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+                group.add(mesh);
+            }
+
+            // Shadows
+            group.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+
+            return group;
+        }
+
+        const popcorn = createPopcornBucket();
+        popcorn.position.set(-8, 2, -5);
+        popcorn.rotation.z = 0.2;
+        popcorn.scale.set(1.8, 1.8, 1.8); // Bigger!
+        scene.add(popcorn);
+        cinemaObjects.push({ mesh: popcorn, speed: { x: 0.005, y: 0.01, z: 0.0 }, float: { speed: 1.5, amp: 0.5, off: 0 } });
+
+
+        // 2. Film Reel
+        function createFilmReel() {
+            const group = new THREE.Group();
+
+            // Materials
+            const metalMat = new THREE.MeshStandardMaterial({
+                color: 0x888888,
+                metalness: 0.9,
+                roughness: 0.2
+            });
+            const filmMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3 });
+
+            // Sides
+            const sideGeo = new THREE.CylinderGeometry(3, 3, 0.1, 32);
+            // Cutout holes? Texture is simpler. Let's just use geometry for structure
+
+            const side1 = new THREE.Mesh(sideGeo, metalMat);
+            side1.position.y = 0.8;
+            group.add(side1);
+
+            const side2 = new THREE.Mesh(sideGeo.clone(), metalMat);
+            side2.position.y = -0.8;
+            group.add(side2);
+
+            // The Film Roll
+            const rollGeo = new THREE.CylinderGeometry(2.8, 2.8, 1.5, 32);
+            const roll = new THREE.Mesh(rollGeo, filmMat);
+            group.add(roll);
+
+            // Hub
+            const hubGeo = new THREE.CylinderGeometry(0.5, 0.5, 1.7, 16);
+            const hub = new THREE.Mesh(hubGeo, metalMat);
+            group.add(hub);
+
+            // Add some "holes" (black circles on the disks)
+            const holeGeo = new THREE.CircleGeometry(0.8, 16);
+            const holeMat = new THREE.MeshBasicMaterial({ color: 0x000000 }); // fake hole
+
+            [0, 1.57, 3.14, 4.71].forEach(angle => {
+                const h1 = new THREE.Mesh(holeGeo, holeMat);
+                h1.rotation.x = -Math.PI / 2;
+                h1.position.set(Math.cos(angle) * 1.8, 0.86, Math.sin(angle) * 1.8);
+                group.add(h1);
+
+                const h2 = new THREE.Mesh(holeGeo, holeMat);
+                h2.rotation.x = Math.PI / 2;
+                h2.position.set(Math.cos(angle) * 1.8, -0.86, Math.sin(angle) * 1.8);
+                group.add(h2);
+            });
+
+            return group;
+        }
+
+        const reel = createFilmReel();
+        reel.position.set(9, -4, -2); // Moved slightly
+        reel.rotation.x = Math.PI / 2;
+        reel.rotation.z = -0.5;
+        reel.scale.set(1.8, 1.8, 1.8); // Bigger!
+        scene.add(reel);
+        cinemaObjects.push({ mesh: reel, speed: { x: 0.00, y: 0.01, z: 0.002 }, float: { speed: 1.2, amp: 0.8, off: 2 } });
+
+
+        // 3. Clapperboard
+        function createClapperboard() {
+            const group = new THREE.Group();
+
+            const boardMat = new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 0.2 });
+            const stripeTex = createStripedTexture('#ffffff', '#151515', false);
+            // Rotate texture for diagonal stripes
+            stripeTex.center.set(0.5, 0.5);
+            stripeTex.rotation = Math.PI / 4;
+            const stripeMat = new THREE.MeshStandardMaterial({ map: stripeTex });
+
+            // Main Board
+            const boardGeo = new THREE.BoxGeometry(5, 3.5, 0.3);
+            const board = new THREE.Mesh(boardGeo, boardMat);
+            board.position.y = -1;
+            group.add(board);
+
+            // Top Bar (Static part)
+            const topStatic = new THREE.Mesh(new THREE.BoxGeometry(5, 0.8, 0.4), stripeMat);
+            topStatic.position.y = 1.3;
+            group.add(topStatic);
+
+            // Clapper (Angled)
+            const clapper = new THREE.Mesh(new THREE.BoxGeometry(5, 0.8, 0.4), stripeMat);
+            clapper.position.y = 1.3; // Pivot point?
+            clapper.geometry.translate(2.5, 0, 0); // Move center to hinge
+            clapper.position.x = -2.5;
+            clapper.rotation.z = 0.3; // Open
+
+            // Animation for clapper?
+            group.userData = { clapper: clapper };
+
+            group.add(clapper);
+
+            return group;
+        }
+
+        const clapper = createClapperboard();
+        clapper.position.set(0, 0, -2); // Center
+        clapper.scale.set(1.8, 1.8, 1.8); // Bigger!
+        scene.add(clapper);
+        cinemaObjects.push({ mesh: clapper, speed: { x: 0.005, y: 0.008, z: 0.0 }, float: { speed: 0.8, amp: 0.3, off: 1 } });
+
+        // Add Floating Stars (Keep them but make them gold/glittery)
+        const partGeo = new THREE.BufferGeometry();
+        const pCount = 300;
+        const pPos = new Float32Array(pCount * 3);
+        const pSizes = new Float32Array(pCount);
+
+        for (let i = 0; i < pCount * 3; i += 3) {
+            pPos[i] = (Math.random() - 0.5) * 50;
+            pPos[i + 1] = (Math.random() - 0.5) * 50;
+            pPos[i + 2] = (Math.random() - 0.5) * 30;
+            pSizes[i / 3] = Math.random();
+        }
+
+        partGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+        partGeo.setAttribute('size', new THREE.BufferAttribute(pSizes, 1)); // shader needed for size attr usually or PointsMaterial sizeAttenuation
+
+        const partMat = new THREE.PointsMaterial({
+            color: 0xffd700,
+            size: 0.2,
+            transparent: true,
+            opacity: 0.6
+        });
+        const particles = new THREE.Points(partGeo, partMat);
+        scene.add(particles);
+
+
+        // --- LIGHTING ----------------------------------------------------------
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+
+        // Moving Colored Lights
+        const light1 = new THREE.PointLight(0x00f2ff, 2, 50);
+        scene.add(light1);
+
+        const light2 = new THREE.PointLight(0xff2d55, 2, 50);
+        scene.add(light2);
+
+        const light3 = new THREE.PointLight(0x7c3aed, 2, 50); // Purple
+        scene.add(light3);
+
+        // --- ANIMATION ---------------------------------------------------------
+
+        let mouseX = 0;
+        let mouseY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX - window.innerWidth / 2) * 0.001;
+            mouseY = (e.clientY - window.innerHeight / 2) * 0.001;
+        });
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const t = clock.getElapsedTime();
+
+            // Animate Cinema Objects
+            cinemaObjects.forEach(obj => {
+                const m = obj.mesh;
+
+                // Rotation
+                m.rotation.x += obj.speed.x;
+                m.rotation.y += obj.speed.y;
+                m.rotation.z += obj.speed.z;
+
+                // Floating
+                const fy = Math.sin(t * obj.float.speed + obj.float.off) * obj.float.amp;
+                // We add this to the base position. 
+                // To avoid drifting, we should have stored basePosition. 
+                // Quick hack: just oscillate slightly on relative Y? No, let's just use the position set above + float
+                // But position is modified. Let's just oscillate rotation more or subtle position drift
+
+                // Let's float based on original pos logic (hardcoded for now to keep simple)
+                if (m === popcorn) m.position.y = 2 + fy;
+                if (m === reel) m.position.y = -3 + fy;
+                if (m === clapper) {
+                    m.position.y = 0 + fy * 0.5;
+                    // Clapper action
+                    if (Math.sin(t * 2) > 0.95) {
+                        m.userData.clapper.rotation.z = 0; // Clap!
+                    } else {
+                        m.userData.clapper.rotation.z = 0.3; // Open
+                    }
+                }
+
+                // Mouse parallax
+                m.rotation.y += mouseX * 0.05;
+                m.rotation.x += mouseY * 0.05;
+            });
+
+            // Particles Rotation
+            particles.rotation.y = t * 0.05;
+
+            // Move Lights
+            light1.position.set(Math.sin(t * 0.7) * 20, Math.cos(t * 0.5) * 20, Math.sin(t * 0.3) * 20);
+            light2.position.set(Math.cos(t * 0.6) * 25, Math.sin(t * 0.4) * 25, -20);
+            light3.position.set(-20, Math.cos(t * 0.8) * 20, Math.cos(t * 0.5) * 20);
+
+            // Camera Parallax
+            camera.position.x += (mouseX * 5 - camera.position.x) * 0.05;
+            camera.position.y += (-mouseY * 5 - camera.position.y) * 0.05;
+            camera.lookAt(0, 0, 0);
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Form Logic
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const original = btn.innerText;
+
+            btn.innerText = 'Authenticating...';
+            btn.style.opacity = '0.8';
+
+            // Warp effect on success?
+            // Increase speed of rotation for all objects
+            const speedUp = setInterval(() => {
+                cinemaObjects.forEach(obj => {
+                    obj.mesh.rotation.x += 0.05;
+                    obj.mesh.rotation.y += 0.05;
+                });
+            }, 16);
+
+            setTimeout(() => {
+                clearInterval(speedUp);
+                window.location.href = 'index.html';
+            }, 2000);
+        });
+    </script>
+    <script src="cursor-effect.js"></script>
+</body>
+
+</html>

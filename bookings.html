@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings | CineFlow</title>
+    <meta name="description" content="View all your CineFlow movie ticket bookings in one place.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        /* ── Booking History Page ─────────────────────────────── */
+        .booking-history {
+            padding: 0 5% 8rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Filter Tabs */
+        .booking-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .booking-tab {
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .booking-tab.active,
+        .booking-tab:hover {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-color: transparent;
+            color: white;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 6rem 2rem;
+            color: var(--text-dim);
+        }
+
+        .empty-state i {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.8rem;
+            color: var(--text-main);
+        }
+
+        .empty-state a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Ticket Card */
+        .ticket-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            margin-bottom: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            min-height: 230px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .ticket-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+        }
+
+        .ticket-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.35;
+            filter: blur(2px) saturate(1.5);
+            z-index: 0;
+        }
+
+        .ticket-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    var(--bg-dark) 25%,
+                    rgba(10, 10, 11, 0.85) 55%,
+                    rgba(10, 10, 11, 0.3) 100%);
+            z-index: 1;
+        }
+
+        .ticket-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            width: 100%;
+            padding: 2.5rem;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .ticket-main-info {
+            flex: 1;
+        }
+
+        .ticket-type-label {
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+        }
+
+        .ticket-main-info h3 {
+            font-size: 2.2rem;
+            margin-bottom: 0.3rem;
+            color: var(--text-main);
+            text-shadow: 0 0 20px rgba(0, 242, 255, 0.25);
+        }
+
+        .ticket-genre {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 1.2rem;
+        }
+
+        .ticket-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem 2rem;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .meta-item i {
+            color: var(--primary);
+            width: 15px;
+            height: 15px;
+        }
+
+        .ticket-divider {
+            width: 1px;
+            height: 100px;
+            background: var(--glass-border);
+            flex-shrink: 0;
+        }
+
+        .ticket-qr-side {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            min-width: 110px;
+        }
+
+        .ticket-status {
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .status-confirmed {
+            background: rgba(0, 242, 255, 0.12);
+            color: var(--primary);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+        }
+
+        .status-watched {
+            background: rgba(255, 255, 255, 0.07);
+            color: var(--text-dim);
+            border: 1px solid var(--glass-border);
+        }
+
+        .status-upcoming {
+            background: rgba(112, 0, 255, 0.15);
+            color: #b070ff;
+            border: 1px solid rgba(112, 0, 255, 0.3);
+        }
+
+        .ticket-total {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .ticket-booked-on {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            text-align: center;
+        }
+
+        /* Dashed tear line */
+        .ticket-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 4px;
+            background: repeating-linear-gradient(90deg,
+                    var(--primary) 0, var(--primary) 8px,
+                    transparent 8px, transparent 16px);
+            opacity: 0.25;
+            z-index: 3;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .ticket-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .ticket-divider {
+                display: none;
+            }
+
+            .ticket-qr-side {
+                flex-direction: row;
+                min-width: unset;
+            }
+
+            .ticket-main-info h3 {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cursor-ambient" aria-hidden="true"></div>
+    <div class="cursor-glow" aria-hidden="true"></div>
+    <div class="cursor"></div>
+
+    <nav class="navbar">
+        <div class="logo">Cine<span>Flow</span></div>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="movies.html">Movies</a></li>
+            <li><a href="theaters.html">Theaters</a></li>
+            <li><a href="bookings.html" class="active">My Bookings</a></li>
+            <li><a href="rewards.html" class="rewards-link">Rewards <span class="points-badge" style="background: linear-gradient(45deg, var(--primary), var(--secondary)); color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; margin-left: 5px; box-shadow: 0 0 10px rgba(0,242,255,0.4);">0 pts</span></a></li>
+        </ul>
+        <button class="btn-primary" onclick="goToPage('login.html')">Sign In</button>
+        <div class="hamburger" id="hamburger" onclick="toggleMobileNav()">
+            <span></span><span></span><span></span>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <h1>My Tickets</h1>
+        <p>Keep track of your cinematic adventures and upcoming shows.</p>
+    </header>
+
+    <div id="ticket-details-modal" class="modal">
+        <div class="modal-content glass" style="max-width: 900px; padding: 2rem;">
+            <button class="close-modal" onclick="document.getElementById('ticket-details-modal').classList.remove('active'); document.body.style.overflow='auto';"><i data-lucide="x"></i></button>
+            <h2 style="margin-bottom: 2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">Ticket Details</h2>
+            
+            <div class="printable-ticket" id="ticket-to-print-details">
+                <img src="" id="details-banner-img" class="ticket-status-banner" alt="banner" loading="lazy">
+                <div class="print-overlay"></div>
+                <div class="print-content">
+                    <div class="print-left">
+                        <p class="print-tag" id="details-experience">Premium Experience</p>
+                        <h3 class="print-title" id="details-movie-title">Movie Title</h3>
+                        <div class="print-info-grid">
+                            <div class="print-info-item"><i data-lucide="calendar"></i><span id="details-date">Date</span></div>
+                            <div class="print-info-item"><i data-lucide="clock"></i><span id="details-time">Time</span></div>
+                            <div class="print-info-item"><i data-lucide="map-pin"></i><span id="details-theater">Theater</span></div>
+                        </div>
+                        <div class="print-info-grid">
+                            <div class="print-info-item"><i data-lucide="armchair"></i><span>SEATS: </span><span id="details-seats"></span></div>
+                            <div class="print-info-item"><i data-lucide="hash"></i><span id="details-ticket-id"></span></div>
+                        </div>
+                        <div id="details-addons-list" class="print-addons-ticket"></div>
+                        <div class="print-info-grid" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                            <div class="print-info-item"><span>Total Amount Paid:</span><span id="details-total" style="font-size: 1.2rem; font-weight: bold; color: var(--secondary); margin-left: 0.5rem;"></span></div>
+                        </div>
+                    </div>
+                    <div class="print-right">
+                        <span class="status-pill" id="details-status">CONFIRMED</span>
+                        <div class="print-qr-container" id="details-qr"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button class="btn-outline full-width" onclick="document.getElementById('ticket-details-modal').classList.remove('active'); document.body.style.overflow='auto';">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <section class="booking-history">
+        <div class="booking-tabs">
+            <button class="booking-tab active" onclick="filterTickets('all', this)">All Tickets</button>
+            <button class="booking-tab" onclick="filterTickets('confirmed', this)">Upcoming</button>
+            <button class="booking-tab" onclick="filterTickets('watched', this)">Watched</button>
+        </div>
+
+        <div id="ticket-list"></div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">Cine<span>Flow</span></div>
+            <p>&copy; 2025 CineFlow. Your ticket to the stars.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="cursor-effect.js"></script>
+    <script>
+        // ── Sample / fallback tickets shown when localStorage is empty ─────────
+        const SAMPLE_TICKETS = [
+            {
+                id: 'CF-9921-X9',
+                title: 'Dune: Part Two',
+                genre: 'Sci-Fi • 2h 46m',
+                image: 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=1470&auto=format&fit=crop',
+                seats: ['B12', 'B13'],
+                date: 'Oct 24, 2025',
+                time: '07:30 PM',
+                theater: 'PVR: Citi Mall, Andheri (W)',
+                total: 700,
+                addons: ['Super Combo'],
+                parking: 'Car',
+                bookedOn: '20 Oct 2025',
+                status: 'watched'
+            },
+            {
+                id: 'CF-8842-Z2',
+                title: 'Oppenheimer',
+                genre: 'Drama • 3h 0m',
+                image: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1470&auto=format&fit=crop',
+                seats: ['F04'],
+                date: 'Aug 12, 2025',
+                time: '04:00 PM',
+                theater: 'IMAX: Inorbit Mall',
+                total: 500,
+                addons: [],
+                parking: null,
+                bookedOn: '10 Aug 2025',
+                status: 'watched'
+            }
+        ];
+
+        function getBookings() {
+            const saved = JSON.parse(localStorage.getItem('cineflow_bookings') || '[]');
+            const currentUser = JSON.parse(localStorage.getItem('cineflow_user') || 'null');
+            
+            // Only show bookings matching the current signed-in user
+            const userSaved = currentUser 
+                ? saved.filter(b => b.userEmail === currentUser.email)
+                : [];
+                
+            // Merge saved (real) with samples; real ones show first
+            return [...userSaved, ...SAMPLE_TICKETS];
+        }
+
+        function getStatus(b) {
+            if (b.status) return b.status;
+            const bookingDate = new Date(b.date);
+            return isNaN(bookingDate) || bookingDate > new Date() ? 'confirmed' : 'watched';
+        }
+
+        function statusLabel(s) {
+            if (s === 'confirmed') return '<span class="ticket-status status-confirmed">UPCOMING</span>';
+            if (s === 'watched') return '<span class="ticket-status status-watched">WATCHED</span>';
+            return '<span class="ticket-status status-upcoming">BOOKED</span>';
+        }
+
+        function typeLabel(b) {
+            const seats = b.seats || [];
+            if (seats.some(s => s.startsWith('P'))) return { label: 'PREMIUM EXPERIENCE', color: 'var(--primary)' };
+            if (seats.some(s => s.startsWith('K'))) return { label: 'COUPLE LOUNGE', color: '#ff4d4d' };
+            return { label: 'STANDARD', color: 'var(--secondary)' };
+        }
+
+        function renderTickets(filter = 'all') {
+            const list = document.getElementById('ticket-list');
+            const bookings = getBookings();
+            const filtered = filter === 'all' ? bookings
+                : bookings.filter(b => {
+                    const s = getStatus(b);
+                    return filter === 'confirmed' ? s === 'confirmed' : s === 'watched';
+                });
+
+            if (filtered.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="ticket" style="width:64px;height:64px;display:block;margin:0 auto 1.5rem;"></i>
+                        <h3>No tickets found</h3>
+                        <p>Looks like you haven't booked any movies yet.<br>
+                        <a href="index.html">Browse movies and book now →</a></p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            list.innerHTML = filtered.map((b, idx) => {
+                const status = getStatus(b);
+                const { label, color } = typeLabel(b);
+                const seatsText = b.seats && b.seats.length > 0 ? b.seats.join(', ') : 'N/A';
+                const addonsText = b.addons && b.addons.length > 0 ? b.addons.join(', ') : null;
+
+                return `
+                <div class="ticket-card reveal" data-status="${status}" onclick="showTicketDetails('${b.id}')" style="cursor: pointer;">
+                    ${b.image ? `<img src="${b.image}" class="ticket-banner" alt="${b.title}" loading="lazy" onerror="this.style.display='none'">` : ''}
+                    <div class="ticket-overlay"></div>
+                    <div class="ticket-content">
+                        <div class="ticket-main-info">
+                            <p class="ticket-type-label" style="color:${color}">${label}</p>
+                            <h3>${b.title}</h3>
+                            <p class="ticket-genre">${b.genre || ''}</p>
+                            <div class="ticket-meta">
+                                <div class="meta-item"><i data-lucide="calendar"></i> ${b.date}</div>
+                                <div class="meta-item"><i data-lucide="clock"></i> ${b.time}</div>
+                                <div class="meta-item"><i data-lucide="map-pin"></i> ${b.theater}</div>
+                            </div>
+                            <div class="ticket-meta" style="margin-top:0.7rem">
+                                <div class="meta-item"><i data-lucide="armchair"></i> ${seatsText}</div>
+                                <div class="meta-item"><i data-lucide="hash"></i> ${b.id}</div>
+                                ${addonsText ? `<div class="meta-item"><i data-lucide="utensils"></i> ${addonsText}</div>` : ''}
+                                ${b.parking ? `<div class="meta-item"><i data-lucide="car"></i> ${b.parking} Parking</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="ticket-divider"></div>
+                        <div class="ticket-qr-side">
+                            ${statusLabel(status)}
+                            <div class="qr-container" data-id="${b.id}" id="qr-${idx}"></div>
+                            <div class="ticket-total">₹${b.total || '—'}</div>
+                            <div class="ticket-booked-on">Booked: ${b.bookedOn}</div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            lucide.createIcons();
+
+            // Generate QR codes
+            filtered.forEach((b, idx) => {
+                const qrEl = document.getElementById(`qr-${idx}`);
+                if (qrEl && typeof QRCode !== 'undefined') {
+                    new QRCode(qrEl, {
+                        text: `CINEFLOW-${b.id}`,
+                        width: 80, height: 80,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                }
+            });
+        }
+
+        function filterTickets(filter, btn) {
+            document.querySelectorAll('.booking-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            renderTickets(filter);
+        }
+
+        function showTicketDetails(id) {
+            const bookings = getBookings();
+            const b = bookings.find(ticket => ticket.id === id);
+            if(!b) return;
+
+            const modal = document.getElementById('ticket-details-modal');
+            const status = getStatus(b);
+            const { label, color } = typeLabel(b);
+
+            const bannerImg = document.getElementById('details-banner-img');
+            if (bannerImg && b.image) {
+                bannerImg.crossOrigin = "anonymous";
+                bannerImg.src = b.image;
+            }
+
+            document.getElementById('details-experience').innerText = label;
+            document.getElementById('details-experience').style.color = color;
+            document.getElementById('details-movie-title').innerText = b.title;
+            document.getElementById('details-date').innerText = b.date || 'TBD';
+            document.getElementById('details-time').innerText = b.time || 'TBD';
+            document.getElementById('details-theater').innerText = b.theater || 'TBD';
+            document.getElementById('details-seats').innerText = b.seats && b.seats.length > 0 ? b.seats.join(', ') : 'Not Selected';
+            document.getElementById('details-ticket-id').innerText = b.id;
+            document.getElementById('details-total').innerText = '₹' + (b.total || '—');
+
+            // Status Pill
+            const statusPill = document.getElementById('details-status');
+            statusPill.innerText = status.toUpperCase();
+            if (status === 'confirmed') {
+                statusPill.style.background = 'rgba(0, 242, 255, 0.12)';
+                statusPill.style.color = 'var(--primary)';
+            } else if (status === 'watched') {
+                statusPill.style.background = 'rgba(255, 255, 255, 0.07)';
+                statusPill.style.color = 'var(--text-dim)';
+            } else {
+                statusPill.style.background = 'rgba(112, 0, 255, 0.15)';
+                statusPill.style.color = '#b070ff';
+            }
+
+            // Addons
+            const addonsList = document.getElementById('details-addons-list');
+            if (addonsList) {
+                let addonsHtml = '';
+                if (b.addons && b.addons.length > 0) {
+                    addonsHtml += `
+                        <div class="addon-print-tag">
+                            <i data-lucide="utensils" style="width:16px;"></i> 
+                            <span><b>REFRESHMENTS:</b> ${b.addons.join(', ')}</span>
+                        </div>`;
+                }
+                if (b.parking) {
+                    const isCar = b.parking.toLowerCase().includes('car');
+                    addonsHtml += `
+                        <div class="addon-print-tag">
+                            <i data-lucide="${isCar ? 'car' : 'bike'}" style="width:16px;"></i> 
+                            <span><b>PARKING PASS:</b> ${b.parking}</span>
+                        </div>`;
+                }
+                addonsList.innerHTML = addonsHtml;
+            }
+
+            // QR
+            const qrContainer = document.getElementById('details-qr');
+            if (qrContainer && typeof QRCode !== 'undefined') {
+                qrContainer.innerHTML = '';
+                new QRCode(qrContainer, {
+                    text: `VALID-TICKET-${b.id}`,
+                    width: 90,
+                    height: 90,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+
+            if (window.lucide) lucide.createIcons();
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Initial render
+        renderTickets('all');
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

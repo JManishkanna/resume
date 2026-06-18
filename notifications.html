@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications | CineFlow</title>
+    <meta name="description" content="View your latest notifications and reminders from CineFlow.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        .notifications-container {
+            padding: 0 5% 8rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-top: 100px;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .page-header h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .notification-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .notification-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            border-color: rgba(0, 242, 255, 0.3);
+        }
+        
+        .notification-card.unread::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+        }
+
+        .noti-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(0, 242, 255, 0.15), rgba(124, 58, 237, 0.15));
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .noti-content {
+            flex: 1;
+        }
+
+        .noti-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+        }
+
+        .noti-desc {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+            margin-bottom: 0.8rem;
+        }
+
+        .noti-time {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+        }
+        
+        .empty-state i {
+            width: 64px;
+            height: 64px;
+            color: var(--text-dim);
+            margin-bottom: 1.5rem;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+        
+        .empty-state p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cursor-ambient" aria-hidden="true"></div>
+    <div class="cursor-glow" aria-hidden="true"></div>
+    <div class="cursor"></div>
+
+    <nav class="navbar">
+        <div class="logo">Cine<span>Flow</span></div>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="movies.html">Movies</a></li>
+            <li><a href="theaters.html">Theaters</a></li>
+            <li><a href="bookings.html">My Bookings</a></li>
+            <li><a href="rewards.html" class="rewards-link">Rewards <span class="points-badge" style="background: linear-gradient(45deg, var(--primary), var(--secondary)); color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; margin-left: 5px; box-shadow: 0 0 10px rgba(0,242,255,0.4);">0 pts</span></a></li>
+        </ul>
+        <button class="btn-primary" onclick="window.location.href='login.html'">Sign In</button>
+        <div class="hamburger" id="hamburger" onclick="toggleMobileNav()">
+            <span></span><span></span><span></span>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <h1>Notifications</h1>
+        <p>Stay updated with your movie reminders, offers, and alerts.</p>
+    </header>
+
+    <div class="notifications-container" id="noti-list">
+        <!-- Rendered dynamically -->
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">Cine<span>Flow</span></div>
+            <p>&copy; 2025 CineFlow. Your ticket to the stars.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="cursor-effect.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderNotifications();
+        });
+
+        function renderNotifications() {
+            const container = document.getElementById('noti-list');
+            const currentUser = JSON.parse(localStorage.getItem('cineflow_user') || 'null');
+            
+            if (!currentUser) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="user-x"></i>
+                        <h3>Not Signed In</h3>
+                        <p>Sign in to view your personalized notifications and smart reminders.</p>
+                        <button class="btn-primary" style="margin-top: 1.5rem;" onclick="window.location.href='login.html'">Sign In</button>
+                    </div>
+                `;
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
+            // We will aggregate notifications here: Smart Reminders + Offers
+            let notifications = [];
+
+            // 1. Map existing bookings to upcoming reminders
+            const allBookings = JSON.parse(localStorage.getItem('cineflow_bookings') || '[]');
+            const userBookings = allBookings.filter(b => b.userEmail === currentUser.email);
+            const now = new Date();
+
+            userBookings.forEach(b => {
+                const bookDate = new Date(`${b.date} ${b.time}`);
+                if (!isNaN(bookDate) && bookDate > now) {
+                    notifications.push({
+                        type: 'reminder',
+                        title: 'Upcoming Movie Reminder',
+                        desc: `You have a booking for <strong>${b.title}</strong> at ${b.time} in ${b.theater}. Get ready!`,
+                        time: bookDate,
+                        icon: 'clock',
+                        unread: true
+                    });
+                }
+            });
+
+            // 2. Add some dummy notifications for offers
+            notifications.push({
+                type: 'offer',
+                title: 'Weekend Blockbuster Offer!',
+                desc: 'Get 50% extra Loyalty Points on all IMAX bookings this weekend.',
+                time: new Date(now.getTime() - 24 * 60 * 60 * 1000), // 1 day ago
+                icon: 'gift',
+                unread: false
+            });
+            
+            notifications.push({
+                type: 'account',
+                title: 'Welcome to CineFlow',
+                desc: 'Thanks for joining us! Start booking tickets to earn exclusive rewards.',
+                time: new Date(now.getTime() - 72 * 60 * 60 * 1000), // 3 days ago
+                icon: 'star',
+                unread: false
+            });
+
+            // Sort by time (newest first)
+            notifications.sort((a, b) => b.time - a.time);
+
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="bell-off"></i>
+                        <h3>All Caught Up</h3>
+                        <p>You have no new notifications.</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = notifications.map(n => `
+                    <div class="notification-card ${n.unread ? 'unread' : ''}">
+                        <div class="noti-icon">
+                            <i data-lucide="${n.icon}"></i>
+                        </div>
+                        <div class="noti-content">
+                            <div class="noti-title">${n.title}</div>
+                            <div class="noti-desc">${n.desc}</div>
+                            <div class="noti-time">
+                                <i data-lucide="calendar" style="width:12px; height:12px;"></i>
+                                ${formatTimeAgo(n.time)}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function formatTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            // Future dates (upcoming movies)
+            if (seconds < 0) {
+                const min = Math.abs(Math.floor(seconds/60));
+                if (min < 60) return `In ${min} mins`;
+                const hrs = Math.floor(min/60);
+                if (hrs < 24) return `In ${hrs} hours`;
+                return `In ${Math.floor(hrs/24)} days`;
+            }
+            
+            // Past dates
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " years ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " months ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " days ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " hours ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " minutes ago";
+            return "Just now";
+        }
+    </script>
+</body>
+</html>

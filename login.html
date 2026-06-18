@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | CineFlow</title>
+    <meta name="description" content="Sign in or create your CineFlow account to start booking cinema tickets.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="cursor-effect.css">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --c: #00f2ff;
+            --p: #7c3aed;
+            --r: #ff2d55;
+            --bg: #07060f;
+            --g: rgba(255, 255, 255, 0.05);
+            --gb: rgba(255, 255, 255, 0.09);
+            --dim: rgba(255, 255, 255, 0.45);
+        }
+
+        html,
+        body {
+            height: 100%;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* ── Layout ────────────────────────────────── */
+        .wrap {
+            display: grid;
+            grid-template-columns: 1fr 460px;
+            height: 100vh;
+        }
+
+        /* ─── LEFT: cinema ─────────────────────────── */
+        .cinema-side {
+            position: relative;
+            overflow: hidden;
+            background: #000;
+        }
+
+        /* deep vignette */
+        .cinema-side::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 60% 100% at 100% 50%, transparent 40%, rgba(7, 6, 15, 0.95) 100%),
+                radial-gradient(ellipse 100% 60% at 50% 0%, transparent 40%, rgba(0, 0, 0, 0.6) 100%),
+                radial-gradient(ellipse 100% 60% at 50% 100%, transparent 40%, rgba(0, 0, 0, 0.6) 100%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* spotlight that follows mouse */
+        .spotlight {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 242, 255, 0.08) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 3;
+            transition: left 0.12s ease, top 0.12s ease;
+        }
+
+        /* POSTER WALL ──────────────────────────────── */
+        .poster-track {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            display: flex;
+            gap: 14px;
+            padding: 14px;
+            perspective: 900px;
+        }
+
+        .poster-col {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            flex: 1;
+            animation: colUp 22s linear infinite;
+        }
+
+        .poster-col:nth-child(even) {
+            animation-name: colDown;
+            animation-duration: 26s;
+        }
+
+        .poster-col:nth-child(3n) {
+            animation-duration: 18s;
+        }
+
+        @keyframes colUp {
+            0% {
+                transform: translateY(0)
+            }
+
+            100% {
+                transform: translateY(-50%)
+            }
+        }
+
+        @keyframes colDown {
+            0% {
+                transform: translateY(-50%)
+            }
+
+            100% {
+                transform: translateY(0)
+            }
+        }
+
+        .poster {
+            border-radius: 12px;
+            overflow: hidden;
+            flex-shrink: 0;
+            transform: rotateY(-8deg) rotateX(2deg);
+            box-shadow: 6px 6px 24px rgba(0, 0, 0, 0.7);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .poster img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            display: block;
+            filter: saturate(0.8) brightness(0.85);
+        }
+
+        /* overlay info strip */
+        .poster-label {
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+            padding: 8px 10px 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 0.5px;
+        }
+
+        /* left brand ───────────────────────────────── */
+        .brand-overlay {
+            position: absolute;
+            bottom: 50px;
+            left: 40px;
+            z-index: 4;
+        }
+
+        .brand-name {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: -2px;
+            line-height: 1;
+        }
+
+        .brand-name span {
+            color: var(--c);
+        }
+
+        .brand-tagline {
+            font-size: 0.78rem;
+            letter-spacing: 4px;
+            color: var(--dim);
+            margin-top: 6px;
+        }
+
+        .brand-dots {
+            display: flex;
+            gap: 6px;
+            margin-top: 20px;
+        }
+
+        .bdot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gb);
+            border: 1px solid var(--gb);
+            cursor: pointer;
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .bdot.active {
+            background: var(--c);
+            transform: scale(1.3);
+        }
+
+        /* ─── RIGHT: form ──────────────────────────── */
+        .form-side {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 56px 52px;
+            background: linear-gradient(160deg, rgba(20, 10, 40, 0.98) 0%, rgba(7, 6, 15, 0.98) 100%);
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            overflow: hidden;
+        }
+
+        /* ambient glow behind form */
+        .form-side::before {
+            content: '';
+            position: absolute;
+            top: -120px;
+            right: -80px;
+            width: 380px;
+            height: 380px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .form-side::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            left: -60px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* top logo on mobile / narrow */
+        .form-logo {
+            font-size: 1.3rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-logo span {
+            color: var(--c);
+        }
+
+        /* ── Tabs ───────────────────────────────────── */
+        .tabs {
+            display: flex;
+            gap: 0;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 11px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: transparent;
+            color: var(--dim);
+            transition: color 0.25s, background 0.25s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(0, 242, 255, 0.15), rgba(124, 58, 237, 0.15));
+            color: #fff;
+            box-shadow: 0 0 0 1px rgba(0, 242, 255, 0.2);
+        }
+
+        /* ── Form panels ────────────────────────────── */
+        .panel {
+            position: relative;
+            z-index: 1;
+        }
+
+        .panel.hidden {
+            display: none;
+        }
+
+        /* ── Heading ───────────────────────────────── */
+        .form-heading {
+            font-size: 1.7rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+
+        .form-heading span {
+            color: var(--c);
+        }
+
+        .form-sub {
+            font-size: 0.82rem;
+            color: var(--dim);
+            margin-bottom: 1.6rem;
+        }
+
+        /* ── Input ──────────────────────────────────── */
+        .field {
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .field label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--dim);
+            margin-bottom: 7px;
+        }
+
+        .field-wrap {
+            position: relative;
+        }
+
+        .field-wrap svg.fi {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 13px 14px 13px 42px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 13px;
+            color: #fff;
+            font-size: 0.93rem;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+        }
+
+        .field input::placeholder {
+            color: rgba(255, 255, 255, 0.18);
+        }
+
+        .field input:focus {
+            border-color: var(--c);
+            background: rgba(0, 242, 255, 0.04);
+            box-shadow: 0 0 0 3px rgba(0, 242, 255, 0.1);
+        }
+
+        .field input.err {
+            border-color: var(--r) !important;
+            box-shadow: 0 0 0 3px rgba(255, 45, 85, 0.12) !important;
+        }
+
+        .field input.ok {
+            border-color: rgba(0, 242, 255, 0.5);
+        }
+
+        .field-err-msg {
+            font-size: 0.71rem;
+            color: var(--r);
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            animation: errIn 0.2s ease;
+        }
+
+        @keyframes errIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* eye toggle */
+        .eye-btn {
+            position: absolute;
+            right: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .eye-btn:hover {
+            color: #fff;
+        }
+
+        .eye-btn svg {
+            width: 17px;
+            height: 17px;
+        }
+
+        /* strength bar */
+        .str-bar {
+            height: 3px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.08);
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .str-fill {
+            height: 100%;
+            width: 0;
+            border-radius: 3px;
+            transition: width 0.35s, background 0.35s;
+        }
+
+        /* ── Row ────────────────────────────────────── */
+        .row-between {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .chk-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--dim);
+            cursor: pointer;
+        }
+
+        .chk-label input {
+            accent-color: var(--c);
+            width: 13px;
+            height: 13px;
+        }
+
+        .forgot {
+            color: var(--c);
+            text-decoration: none;
+            font-size: 0.78rem;
+            transition: opacity 0.2s;
+        }
+
+        .forgot:hover {
+            opacity: 0.7;
+        }
+
+        /* ── CTA button ─────────────────────────────── */
+        .btn-cta {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #00f2ff 0%, #7c3aed 100%);
+            color: #fff;
+            letter-spacing: 0.5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 32px rgba(0, 242, 255, 0.2);
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 40px rgba(0, 242, 255, 0.35);
+        }
+
+        .btn-cta:active {
+            transform: translateY(0);
+        }
+
+        .btn-cta .lbl {
+            transition: opacity 0.15s;
+        }
+
+        .btn-cta.loading .lbl {
+            opacity: 0;
+        }
+
+        .spin {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-cta.loading .spin {
+            display: flex;
+        }
+
+        .spin-r {
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spinR 0.7s linear infinite;
+        }
+
+        @keyframes spinR {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ripple */
+        .rpl {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0);
+            animation: rplA 0.55s ease;
+            pointer-events: none;
+        }
+
+        @keyframes rplA {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* ── Divider ────────────────────────────────── */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--dim);
+            font-size: 0.72rem;
+            margin: 1.1rem 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ── Social ─────────────────────────────────── */
+        .socials {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 0;
+        }
+
+        .btn-soc {
+            flex: 1;
+            padding: 11px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.82rem;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .btn-soc:hover {
+            border-color: rgba(0, 242, 255, 0.4);
+            background: rgba(0, 242, 255, 0.06);
+        }
+
+        .btn-soc svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .mode-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--dim);
+            text-transform: uppercase;
+        }
+
+        .toggle-switch {
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 13px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .toggle-switch.admin {
+            background: rgba(0, 242, 255, 0.15);
+            border-color: rgba(0, 242, 255, 0.3);
+        }
+
+        .toggle-slider {
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch.admin .toggle-slider {
+            left: 26px;
+        }
+
+        .mode-icon {
+            font-size: 0.9rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .success-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1.2rem;
+            text-align: center;
+            background: var(--bg);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .success-screen.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .suc-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(0, 242, 255, 0.08);
+            border: 2px solid var(--c);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 40px rgba(0, 242, 255, 0.3);
+            animation: sCircle 0.6s ease both;
+        }
+
+        @keyframes sCircle {
+            from {
+                transform: scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .suc-circle svg {
+            width: 44px;
+            height: 44px;
+        }
+
+        .suc-title {
+            font-size: 2rem;
+            font-weight: 800;
+            animation: fadeUp 0.5s ease 0.25s both;
+        }
+
+        .suc-title span {
+            color: var(--c);
+        }
+
+        .suc-sub {
+            color: var(--dim);
+            font-size: 0.85rem;
+            animation: fadeUp 0.5s ease 0.4s both;
+        }
+
+        .suc-bar-wrap {
+            width: 200px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            animation: fadeUp 0.5s ease 0.5s both;
+        }
+
+        .suc-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--c), var(--p));
+            border-radius: 3px;
+            transition: width 2s linear;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .confetti-piece {
+            position: fixed;
+            pointer-events: none;
+            z-index: 101;
+            animation: confettiFall linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(var(--tx), var(--ty)) rotate(var(--r));
+                opacity: 0;
+            }
+        }
+
+        @keyframes shakeX {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-8px);
+            }
+
+            40% {
+                transform: translateX(8px);
+            }
+
+            60% {
+                transform: translateX(-5px);
+            }
+
+            80% {
+                transform: translateX(5px);
+            }
+        }
+
+        .shake {
+            animation: shakeX 0.4s ease;
+        }
+
+        @media (max-width: 768px) {
+            .wrap {
+                grid-template-columns: 1fr;
+            }
+
+            .cinema-side {
+                display: none;
+            }
+
+            .form-side {
+                padding: 40px 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cursor-ambient" aria-hidden="true"></div>
+    <div class="cursor-glow" aria-hidden="true"></div>
+    <div class="cursor"></div>
+
+    <div class="spotlight" id="spotlight"></div>
+
+    <div class="success-screen" id="successScreen">
+        <div class="suc-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00f2ff" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+            </svg>
+        </div>
+        <div>
+            <div class="suc-title" id="sucTitle">Welcome <span>Back!</span></div>
+            <p class="suc-sub" id="sucSub">Taking you to your cinema universe…</p>
+        </div>
+        <div class="suc-bar-wrap">
+            <div class="suc-bar" id="sucBar"></div>
+        </div>
+    </div>
+
+    <div class="wrap">
+
+        <div class="cinema-side" id="cinemaSide">
+            <div class="spotlight" id="spotLeft"></div>
+
+            <div class="poster-track" id="posterTrack"></div>
+
+            <div class="brand-overlay">
+                <div class="brand-name">Cine<span>Flow</span></div>
+                <div class="brand-tagline">YOUR CINEMATIC UNIVERSE</div>
+                <div class="brand-dots">
+                    <div class="bdot active"></div>
+                    <div class="bdot"></div>
+                    <div class="bdot"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-side">
+            <div class="form-logo">Cine<span>Flow</span></div>
+
+            <div class="mode-toggle" id="modeToggle">
+                <span class="mode-icon">👤</span>
+                <span class="mode-label">User</span>
+                <div class="toggle-switch" id="toggleSwitch" onclick="switchMode()">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span class="mode-label">Admin</span>
+                <span class="mode-icon">🔐</span>
+            </div>
+
+            <div class="tabs" role="tablist" id="userTabs">
+                <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')" role="tab">Sign In</button>
+                <button class="tab-btn" id="tabSignup" onclick="switchTab('signup')" role="tab">Create Account</button>
+            </div>
+
+            <div class="panel" id="panelLogin">
+                <div class="form-heading">Welcome <span>Back</span></div>
+                <p class="form-sub">Sign in to continue your journey</p>
+
+                <div class="field" id="li-email-field">
+                    <label>Email Address</label>
+                    <div class="field-wrap">
+                        <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="4" width="20" height="16" rx="2" />
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                        </svg>
+                        <input type="email" id="li-email" placeholder="you@example.com" autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="field" id="li-pass-field">
+                    <label>Password</label>
+                    <div class="field-wrap">
+                        <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <input type="password" id="li-pass" placeholder="••••••••" autocomplete="current-password">
+                        <button class="eye-btn" onclick="toggleEye('li-pass',this)" tabindex="-1">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row-between">
+                    <label class="chk-label"><input type="checkbox" id="li-remember"> Remember me</label>
+                    <a href="#" class="forgot">Forgot password?</a>
+                </div>
+
+                <button class="btn-cta" id="liBtn" onclick="handleLogin(event)">
+                    <span class="lbl">Sign In</span>
+                    <div class="spin">
+                        <div class="spin-r"></div>
+                    </div>
+                </button>
+
+                <div class="divider">or continue with</div>
+                <div class="socials">
+                    <button class="btn-soc">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                fill="#4285F4" />
+                            <path
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                fill="#34A853" />
+                            <path
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                fill="#FBBC05" />
+                            <path
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                fill="#EA4335" />
+                        </svg>
+                        Google
+                    </button>
+                    <button class="btn-soc">
+                        <svg viewBox="0 0 24 24" fill="white">
+                            <path
+                                d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+                        </svg>
+                        Apple
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel hidden" id="panelSignup">
+                <div class="form-heading">Join <span>CineFlow</span></div>
+                <p class="form-sub">Create your free account today</p>
+
+                <div class="field" id="su-name-field">
+                    <label>Full Name</label>
+                    <div class="field-wrap">
+                        <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                        </svg>
+                        <input type="text" id="su-name" placeholder="Your full name" autocomplete="name">
+                    </div>
+                </div>
+
+                <div class="field" id="su-email-field">
+                    <label>Email Address</label>
+                    <div class="field-wrap">
+                        <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="4" width="20" height="16" rx="2" />
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                        </svg>
+                        <input type="email" id="su-email" placeholder="you@example.com" autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="field" id="su-pass-field">
+                    <label>Password</label>
+                    <div class="field-wrap">
+                        <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <input type="password" id="su-pass" placeholder="Min. 8 characters"
+                            oninput="strengthCheck(this.value)">
+                        <button class="eye-btn" onclick="toggleEye('su-pass',this)" tabindex="-1">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="str-bar">
+                        <div class="str-fill" id="strFill"></div>
+                    </div>
+                </div>
+
+                <button class="btn-cta" id="suBtn" style="margin-top:0.4rem" onclick="handleRegister(event)">
+                    <span class="lbl">Create Account</span>
+                    <div class="spin">
+                        <div class="spin-r"></div>
+                    </div>
+                </button>
+
+                <div class="divider">or sign up with</div>
+                <div class="socials">
+                    <button class="btn-soc">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                fill="#4285F4" />
+                            <path
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                fill="#34A853" />
+                            <path
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                fill="#FBBC05" />
+                            <path
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                fill="#EA4335" />
+                        </svg>
+                        Google
+                    </button>
+                    <button class="btn-soc">
+                        <svg viewBox="0 0 24 24" fill="white">
+                            <path
+                                d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+                        </svg>
+                        Apple
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel hidden" id="panelAdminLogin">
+                <div class="form-heading">Admin <span>Access</span></div>
+                <p class="form-sub">Enter your admin credentials</p>
+
+                <div class="field" id="admin-email-field">
+                    <label>Admin Email</label>
+                    <div class="field-wrap">
+                        <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="4" width="20" height="16" rx="2" />
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                        </svg>
+                        <input type="email" id="admin-email" placeholder="admin@cineflow.com" autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="field" id="admin-pass-field">
+                    <label>Admin Password</label>
+                    <div class="field-wrap">
+                        <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <input type="password" id="admin-pass" placeholder="••••••••" autocomplete="current-password">
+                        <button class="eye-btn" onclick="toggleEye('admin-pass',this)" tabindex="-1">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row-between">
+                    <label class="chk-label"><input type="checkbox" id="admin-remember"> Remember me</label>
+                    <a href="#" class="forgot">Forgot password?</a>
+                </div>
+
+                <button class="btn-cta" id="adminBtn" onclick="handleAdminLogin(event)">
+                    <span class="lbl">Admin Sign In</span>
+                    <div class="spin">
+                        <div class="spin-r"></div>
+                    </div>
+                </button>
+
+                <div class="divider">Restricted Access</div>
+                <p style="text-align: center; color: var(--dim); font-size: 0.8rem;">
+                    Only authorized administrators can access this panel.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const posterData = [
+            { title: 'Dune: Part Two', color: '#b5830a', img: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=200&q=80' },
+            { title: 'Oppenheimer', color: '#c0392b', img: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=200&q=80' },
+            { title: 'The Batman', color: '#1a1a2e', img: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=200&q=80' },
+            { title: 'Avatar', color: '#0d6efd', img: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=200&q=80' },
+            { title: 'Interstellar', color: '#2c3e50', img: 'https://images.unsplash.com/photo-1505506874110-6a7a69069a08?w=200&q=80' },
+            { title: 'Inception', color: '#16213e', img: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=200&q=80' },
+            { title: 'Tenet', color: '#1b1b2f', img: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=200&q=80' },
+            { title: 'Top Gun', color: '#8b0000', img: 'https://images.unsplash.com/photo-1535016120720-40c646be5580?w=200&q=80' },
+            { title: 'Spider-Man', color: '#6b1b1b', img: 'https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=200&q=80' },
+            { title: 'Black Panther', color: '#1a0030', img: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?w=200&q=80' },
+            { title: 'Joker', color: '#3d0000', img: 'https://images.unsplash.com/photo-1603349136288-18e6b9a64e61?w=200&q=80' },
+            { title: 'Doctor Strange', color: '#4a0072', img: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=200&q=80' },
+        ];
+
+        function buildPosterWall() {
+            const track = document.getElementById('posterTrack');
+            const COLS = 5;
+            const cols = Array.from({ length: COLS }, () => {
+                const c = document.createElement('div');
+                c.className = 'poster-col';
+                track.appendChild(c);
+                return c;
+            });
+
+            /* fill each col with 2× repeated posters so seamless scroll works */
+            const pool = [...posterData, ...posterData, ...posterData];
+            pool.forEach((p, i) => {
+                const col = cols[i % COLS];
+                const card = document.createElement('div');
+                card.className = 'poster';
+                card.innerHTML = `
+      <img src="${p.img}" alt="${p.title}" loading="lazy">
+      <div class="poster-label">${p.title}</div>`;
+                col.appendChild(card);
+            });
+
+            /* duplicate for seamless loop */
+            cols.forEach(c => {
+                const clone = c.innerHTML;
+                c.innerHTML += clone;
+            });
+        }
+
+        buildPosterWall();
+
+        /* ── Spotlight follow ──────────────────────────────── */
+        const spotlight = document.getElementById('spotlight');
+        const cinemaSide = document.getElementById('cinemaSide');
+
+        document.addEventListener('mousemove', e => {
+            spotlight.style.left = e.clientX + 'px';
+            spotlight.style.top = e.clientY + 'px';
+            /* cinema-side local spotlight */
+            const r = cinemaSide.getBoundingClientRect();
+            if (e.clientX < r.right) {
+                spotlight.style.display = 'block';
+            }
+        });
+
+        /* ── Tab switching ─────────────────────────────────── */
+        function switchTab(tab) {
+            const isLogin = tab === 'login';
+            document.getElementById('tabLogin').classList.toggle('active', isLogin);
+            document.getElementById('tabSignup').classList.toggle('active', !isLogin);
+            document.getElementById('panelLogin').classList.toggle('hidden', !isLogin);
+            document.getElementById('panelSignup').classList.toggle('hidden', isLogin);
+            clearAllErrors();
+        }
+
+        /* ── Eye toggle ────────────────────────────────────── */
+        function toggleEye(id, btn) {
+            const inp = document.getElementById(id);
+            const show = inp.type === 'password';
+            inp.type = show ? 'text' : 'password';
+            btn.innerHTML = show
+                ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+        }
+
+        /* ── Mode switching (User/Admin) ────────────────────── */
+        let isAdminMode = false;
+
+        function switchMode() {
+            isAdminMode = !isAdminMode;
+            const toggle = document.getElementById('toggleSwitch');
+            const userTabs = document.getElementById('userTabs');
+            const panelLogin = document.getElementById('panelLogin');
+            const panelSignup = document.getElementById('panelSignup');
+            const panelAdminLogin = document.getElementById('panelAdminLogin');
+
+            toggle.classList.toggle('admin', isAdminMode);
+
+            if (isAdminMode) {
+                // Switch to admin mode
+                userTabs.style.display = 'none';
+                panelLogin.classList.add('hidden');
+                panelSignup.classList.add('hidden');
+                panelAdminLogin.classList.remove('hidden');
+                clearAllErrors();
+            } else {
+                // Switch back to user mode
+                userTabs.style.display = 'flex';
+                panelAdminLogin.classList.add('hidden');
+                panelLogin.classList.remove('hidden');
+                panelSignup.classList.add('hidden');
+                switchTab('login');
+                clearAllErrors();
+            }
+        }
+
+        /* ── Admin login handler ────────────────────────────── */
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            clearAllErrors();
+
+            const email = document.getElementById('admin-email').value.trim();
+            const pass = document.getElementById('admin-pass').value;
+
+            // Validation
+            if (!email) {
+                setErr('admin-email-field', 'Email is required');
+                return;
+            }
+            if (!pass) {
+                setErr('admin-pass-field', 'Password is required');
+                return;
+            }
+            if (pass.length < 6) {
+                setErr('admin-pass-field', 'Password too short');
+                return;
+            }
+
+            // Simulate admin authentication (hardcoded for demo)
+            // In production, this would call an API endpoint
+            const adminEmail = 'admin@cineflow.com';
+            const adminPassword = 'admin123';
+
+            if (email === adminEmail && pass === adminPassword) {
+                // Store admin session
+                const adminUser = {
+                    email: email,
+                    isAdmin: true,
+                    login_time: new Date().toISOString(),
+                    id: 'admin_' + Date.now()
+                };
+
+                localStorage.setItem('user', JSON.stringify(adminUser));
+                localStorage.setItem('isAdmin', 'true');
+                localStorage.setItem('adminLoginTime', new Date().toISOString());
+
+                if (document.getElementById('admin-remember').checked) {
+                    localStorage.setItem('rememberAdmin', 'true');
+                }
+
+                // Show success
+                showSuccess('Welcome Admin!');
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 1500);
+            } else {
+                setErr('admin-pass-field', 'Invalid admin credentials');
+            }
+        }
+
+        /* ── Strength ──────────────────────────────────────── */
+        function strengthCheck(val) {
+            const fill = document.getElementById('strFill');
+            if (!fill) return;
+            let s = 0;
+            if (val.length >= 8) s++;
+            if (/[A-Z]/.test(val)) s++;
+            if (/[0-9]/.test(val)) s++;
+            if (/[^A-Za-z0-9]/.test(val)) s++;
+            fill.style.width = (s * 25) + '%';
+            fill.style.background = ['#ff2d55', '#ff8c00', '#f7c600', '#00f2ff'][s - 1] || '#ff2d55';
+        }
+
+        /* ── Validation helpers ────────────────────────────── */
+        function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+        function setErr(fieldId, msg) {
+            const field = document.getElementById(fieldId);
+            const inp = field.querySelector('input');
+            inp.classList.add('err'); inp.classList.remove('ok');
+            let em = field.querySelector('.field-err-msg');
+            if (!em) { em = document.createElement('div'); em.className = 'field-err-msg'; field.appendChild(em); }
+            em.innerHTML = `⚠ ${msg}`;
+        }
+
+        function setOk(fieldId) {
+            const field = document.getElementById(fieldId);
+            const inp = field.querySelector('input');
+            inp.classList.remove('err'); inp.classList.add('ok');
+            const em = field.querySelector('.field-err-msg');
+            if (em) em.remove();
+        }
+
+        function clearAllErrors() {
+            document.querySelectorAll('.field input').forEach(i => { i.classList.remove('err', 'ok'); });
+            document.querySelectorAll('.field-err-msg').forEach(e => e.remove());
+        }
+
+        /* clear error on typing */
+        document.querySelectorAll('.field input').forEach(inp => {
+            inp.addEventListener('input', () => {
+                if (inp.value.trim()) { inp.classList.remove('err'); const em = inp.closest('.field').querySelector('.field-err-msg'); if (em) em.remove(); }
+            });
+        });
+
+        /* ── Ripple ────────────────────────────────────────── */
+        document.querySelectorAll('.btn-cta').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                const r = document.createElement('span');
+                r.className = 'rpl';
+                const sz = Math.max(this.offsetWidth, this.offsetHeight);
+                const rc = this.getBoundingClientRect();
+                r.style.cssText = `width:${sz}px;height:${sz}px;left:${e.clientX - rc.left - sz / 2}px;top:${e.clientY - rc.top - sz / 2}px`;
+                this.appendChild(r);
+                setTimeout(() => r.remove(), 600);
+            });
+        });
+
+        /* ── Shake panel ───────────────────────────────────── */
+        function shakePanelId(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('shake');
+            void el.offsetWidth; // reflow
+            el.classList.add('shake');
+            setTimeout(() => el.classList.remove('shake'), 500);
+        }
+
+        /* ── Login handler ─────────────────────────────────── */
+        function handleLogin(e) {
+            const emailEl = document.getElementById('li-email');
+            const passEl = document.getElementById('li-pass');
+            let ok = true;
+
+            if (!emailEl.value.trim()) {
+                setErr('li-email-field', 'Email address is required'); ok = false;
+            } else if (!validEmail(emailEl.value.trim())) {
+                setErr('li-email-field', 'Enter a valid email (e.g. you@mail.com)'); ok = false;
+            } else { setOk('li-email-field'); }
+
+            if (!passEl.value) {
+                setErr('li-pass-field', 'Password is required'); ok = false;
+            } else if (passEl.value.length < 6) {
+                setErr('li-pass-field', 'Password must be at least 6 characters'); ok = false;
+            } else { setOk('li-pass-field'); }
+
+            if (!ok) { shakePanelId('panelLogin'); return; }
+
+            const btn = document.getElementById('liBtn');
+            btn.classList.add('loading');
+
+            setTimeout(() => {
+                btn.classList.remove('loading');
+                // Save session
+                localStorage.setItem('cineflow_user', JSON.stringify({
+                    name: emailEl.value.split('@')[0],
+                    email: emailEl.value.trim()
+                }));
+                showSuccess('Welcome Back!', 'Taking you to your cinema universe…', 'index.html');
+            }, 1200);
+        }
+
+        /* ── Register handler ──────────────────────────────── */
+        function handleRegister(e) {
+            const nameEl = document.getElementById('su-name');
+            const emailEl = document.getElementById('su-email');
+            const passEl = document.getElementById('su-pass');
+            let ok = true;
+
+            if (!nameEl.value.trim()) { setErr('su-name-field', 'Full name is required'); ok = false; }
+            else { setOk('su-name-field'); }
+
+            if (!emailEl.value.trim()) { setErr('su-email-field', 'Email is required'); ok = false; }
+            else if (!validEmail(emailEl.value.trim())) { setErr('su-email-field', 'Enter a valid email (e.g. you@mail.com)'); ok = false; }
+            else { setOk('su-email-field'); }
+
+            if (!passEl.value) { setErr('su-pass-field', 'Password is required'); ok = false; }
+            else if (passEl.value.length < 8) { setErr('su-pass-field', 'Password must be at least 8 characters'); ok = false; }
+            else { setOk('su-pass-field'); }
+
+            if (!ok) { shakePanelId('panelSignup'); return; }
+
+            const btn = document.getElementById('suBtn');
+            btn.classList.add('loading');
+            const name = nameEl.value.trim().split(' ')[0];
+
+            setTimeout(() => {
+                btn.classList.remove('loading');
+                // Save session
+                localStorage.setItem('cineflow_user', JSON.stringify({
+                    name: nameEl.value.trim(),
+                    email: emailEl.value.trim()
+                }));
+                burstConfetti();
+                showSuccess(`Welcome, ${name}! 🎬`, 'Your account is ready. Enjoy the show!', 'index.html');
+            }, 1200);
+        }
+
+        /* ── Confetti ──────────────────────────────────────── */
+        function burstConfetti() {
+            const cols = ['#00f2ff', '#7c3aed', '#ff2d55', '#ffc600', '#fff', '#00ff88'];
+            for (let i = 0; i < 90; i++) {
+                const el = document.createElement('div');
+                el.className = 'confetti-piece';
+                const tx = (Math.random() - 0.5) * window.innerWidth * 1.2;
+                const ty = (Math.random() * 0.6 + 0.4) * -window.innerHeight;
+                const rot = Math.random() * 720 - 360;
+                const sz = 5 + Math.random() * 9;
+                const dur = 0.8 + Math.random() * 0.9;
+                const col = cols[Math.floor(Math.random() * cols.length)];
+                const shape = Math.random() > .5 ? '50%' : '2px';
+                Object.assign(el.style, {
+                    left: (40 + Math.random() * 70) + 'vw',
+                    top: '50vh',
+                    width: sz + 'px',
+                    height: sz * (Math.random() > .5 ? 1 : 2.5) + 'px',
+                    background: col,
+                    borderRadius: shape,
+                    '--tx': tx + 'px',
+                    '--ty': ty + 'px',
+                    '--r': rot + 'deg',
+                    animationDuration: dur + 's',
+                    animationTimingFunction: 'cubic-bezier(0.1,0.8,0.3,1)',
+                });
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), dur * 1000 + 200);
+            }
+        }
+
+        /* ── Success screen ────────────────────────────────── */
+        function showSuccess(title, sub, redirect) {
+            const scr = document.getElementById('successScreen');
+            document.getElementById('sucTitle').innerHTML = title.replace('!', '<span>!</span>');
+            document.getElementById('sucSub').textContent = sub;
+            scr.classList.add('show');
+
+            // progress bar
+            setTimeout(() => {
+                const bar = document.getElementById('sucBar');
+                bar.style.width = '100%';
+            }, 100);
+
+            setTimeout(() => {
+                window.location.href = redirect;
+            }, 2200);
+        }
+    </script>
+    <script src="cursor-effect.js"></script>
+</body>
+
+</html>

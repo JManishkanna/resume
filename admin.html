@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | CineFlow</title>
+    <meta name="description" content="Manage movies for the CineFlow application.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        .admin-container {
+            padding: 0 5% 8rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-top: 100px;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .page-header h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Stats Row */
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        .stat-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(0, 242, 255, 0.1), rgba(124, 58, 237, 0.1));
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+        .stat-info h3 { font-size: 1.8rem; margin: 0; color: #fff; }
+        .stat-info p { margin: 0; color: var(--text-dim); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Actions & Table */
+        .admin-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-container {
+            background: var(--bg-dark);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th, td {
+            padding: 1.2rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        th {
+            background: rgba(255,255,255,0.02);
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .movie-cell {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .movie-cell img {
+            width: 40px;
+            height: 60px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .movie-cell-info h4 { margin: 0 0 0.3rem; font-size: 1rem; color: #fff; line-height: 1.2; }
+        .movie-cell-info p { margin: 0; font-size: 0.8rem; color: var(--text-dim); }
+
+        .btn-table {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-table:hover { background: rgba(255, 255, 255, 0.1); }
+        .btn-table.danger { color: #ff5a70; background: rgba(255, 90, 112, 0.1); border-color: rgba(255, 90, 112, 0.2); }
+        .btn-table.danger:hover { background: rgba(255, 90, 112, 0.2); }
+
+        .tag-hero {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(0, 242, 255, 0.2));
+            color: var(--primary);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        /* Popover specific to admin */
+        #admin-modal, #theater-modal {
+            position: absolute;
+            top: calc(100% + 15px);
+            right: 0;
+            z-index: 1000;
+            width: 420px;
+            max-width: 90vw;
+            padding: 2rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--primary);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0, 242, 255, 0.15);
+            display: none;
+            flex-direction: column;
+            transform-origin: top right;
+            animation: popoverScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(20px);
+        }
+        #admin-modal.active, #theater-modal.active {
+            display: flex;
+        }
+        @keyframes popoverScale {
+            0% { opacity: 0; transform: scale(0.9) translateY(-10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        #admin-modal .close-modal, #theater-modal .close-modal {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        #admin-modal .close-modal:hover, #theater-modal .close-modal:hover { color: #fff; }
+
+        .admin-form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.2rem;
+        }
+        .admin-form-group.full {
+            grid-column: 1 / -1;
+        }
+        .admin-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .upload-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .upload-divider {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            position: relative;
+            margin: 0.5rem 0;
+        }
+
+        .upload-divider::before, .upload-divider::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .upload-divider::before { left: 0; }
+        .upload-divider::after { right: 0; }
+
+        .btn-upload {
+            background: rgba(255,255,255,0.05);
+            border: 1px dashed rgba(255,255,255,0.2);
+            padding: 12px;
+            border-radius: 12px;
+            color: var(--text-dim);
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-upload:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(0, 242, 255, 0.05);
+        }
+        .admin-form-group label {
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .admin-form-group input, .admin-form-group select, .admin-form-group textarea {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.8rem 1rem;
+            color: white;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .admin-form-group input:focus, .admin-form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+        }
+        
+    </style>
+</head>
+
+<body>
+    <div class="cursor-ambient" aria-hidden="true"></div>
+    <div class="cursor-glow" aria-hidden="true"></div>
+    <div class="cursor"></div>
+
+    <nav class="navbar">
+        <div class="logo">Cine<span>Flow</span> <span style="font-size: 0.6rem; background: var(--primary); padding: 2px 6px; border-radius: 10px; color: #000; font-weight: 800; letter-spacing: 1px; vertical-align: top; margin-left: 5px;">ADMIN</span></div>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="index.html">Main Site</a></li>
+            <li><a href="#" class="active" id="tab-movies-link" onclick="switchTab('movies')">Movies</a></li>
+            <li><a href="#" id="tab-theaters-link" onclick="switchTab('theaters')">Theaters</a></li>
+        </ul>
+        <button class="btn-primary" onclick="window.location.href='index.html'">Exit Admin</button>
+    </nav>
+
+    <header class="page-header">
+        <h1 id="page-title">Movie Database</h1>
+        <p id="page-desc">Add, edit, and remove movies available on the CineFlow platform.</p>
+    </header>
+
+    <div class="admin-container">
+        <!-- Movies View -->
+        <div id="view-movies">
+            <!-- Stats -->
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="film"></i></div>
+                    <div class="stat-info">
+                        <h3 id="stat-total-movies">-</h3>
+                        <p>Total Movies</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #7c3aed; border-color: rgba(124,58,237,0.3);"><i data-lucide="star"></i></div>
+                    <div class="stat-info">
+                        <h3 id="stat-hero-movies">-</h3>
+                        <p>Hero Slider Movies</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-actions" style="position: relative; z-index: 20;">
+                <h2 style="font-size: 1.5rem; margin: 0;">Manage Movies</h2>
+                <button class="btn-primary" id="add-movie-btn" onclick="toggleAddMovieModal()"><i data-lucide="plus"></i> Add New Movie</button>
+                
+                <!-- Add/Edit Popover (Movies) -->
+                <div id="admin-modal" class="glass">
+                    <button class="close-modal" type="button" onclick="toggleAddMovieModal()"><i data-lucide="x"></i></button>
+                    <h2 id="movie-form-title" style="margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;"><i data-lucide="film" style="color:var(--primary); margin-right: 10px;"></i> Add New Movie</h2>
+                    
+                    <form id="admin-movie-form" onsubmit="saveMovie(event)">
+                        <input type="hidden" id="movie-id">
+                        <div class="admin-form-grid">
+                            <div class="admin-form-group">
+                                <label>Movie Title</label>
+                                <input type="text" id="movie-title" placeholder="e.g. Avatar: The Way of Water" required>
+                            </div>
+        
+                            <div class="admin-form-group">
+                                <label>Genre</label>
+                                <input type="text" id="movie-genre" placeholder="e.g. Sci-Fi, Action" required>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Ticket Price (₹)</label>
+                                <input type="number" id="movie-price" placeholder="e.g. 350" required min="50">
+                            </div>
+        
+                            <div class="admin-form-group">
+                                <label>Duration</label>
+                                <input type="text" id="movie-duration" placeholder="e.g. 2h 45m" required>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Target Mood</label>
+                                <select id="movie-mood" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px; border-radius: 12px; outline: none;">
+                                    <option value="" style="background: #111;">None</option>
+                                    <option value="Thrilling" style="background: #111;">Thrilling</option>
+                                    <option value="Relaxed" style="background: #111;">Relaxed</option>
+                                    <option value="Mind-Bending" style="background: #111;">Mind-Bending</option>
+                                    <option value="Dramatic" style="background: #111;">Dramatic</option>
+                                </select>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Rating (Out of 5)</label>
+                                <input type="number" id="movie-rating" placeholder="e.g. 4.8" step="0.1" min="1" max="5" required>
+                            </div>
+
+                            <div class="admin-form-group full">
+                                <label>Available In Theaters</label>
+                                <select id="movie-theaters" multiple style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px; border-radius: 12px; outline: none; min-height: 120px;">
+                                    <!-- Theater options populated dynamically -->
+                                </select>
+                                <small style="color: var(--text-dim); font-size: 0.8rem;">Hold Ctrl / Cmd to select multiple theaters.</small>
+                            </div>
+
+                            <div class="admin-form-group">
+                                <label>Image Source</label>
+                                <div class="upload-input-group">
+                                    <input type="url" id="movie-image" placeholder="Paste URL here (https://...)" oninput="updatePreview('movie')">
+                                    <div class="upload-divider">OR UPLOAD</div>
+                                    <label class="btn-upload">
+                                        <i data-lucide="upload"></i> Choose Image File
+                                        <input type="file" id="movie-file" accept="image/*" style="display: none;" onchange="handleFileUpload('movie', event)">
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="admin-form-group full" id="movie-preview-container" style="display: none; margin-top: 1rem;">
+                                <label>Image Preview</label>
+                                <img id="movie-preview-img" src="" alt="Preview" style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                            </div>
+        
+                            <div class="admin-form-group">
+                                <label>Director</label>
+                                <input type="text" id="movie-director" placeholder="e.g. James Cameron" required>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Cast</label>
+                                <input type="text" id="movie-cast" placeholder="Sam Worthington, Zoe Saldana" required>
+                            </div>
+        
+                            <div class="admin-form-group full">
+                                <label>Description</label>
+                                <textarea id="movie-desc" rows="3" placeholder="A brief summary of the movie plot..." required></textarea>
+                            </div>
+
+                            <div class="admin-form-group full">
+                                <label>Trailer URL (YouTube Embed)</label>
+                                <input type="url" id="movie-trailer" placeholder="e.g. https://www.youtube.com/embed/VIDEO_ID" required>
+                                <small style="color: var(--text-dim); margin-top: 5px; display: block;">Get the embed URL from YouTube (right-click video > Copy embed code)</small>
+                            </div>
+        
+                            <div class="admin-form-group full" style="flex-direction: row; align-items: center; gap: 1rem; margin-top: 1rem;">
+                                <input type="checkbox" id="movie-hero" style="width: 24px; height: 24px; accent-color: var(--primary);">
+                                <label for="movie-hero" style="margin: 0;">Show in Home Page Hero Slider</label>
+                            </div>
+                        </div>
+        
+                        <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                            <button type="button" class="btn-table" onclick="toggleAddMovieModal()" style="padding: 10px 20px;">Cancel</button>
+                            <button type="submit" id="movie-save-btn" class="btn-primary">Save Movie</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Movie</th>
+                            <th>Genre & Mood</th>
+                            <th>Price & Rating</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-movie-table">
+                        <!-- Populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Theaters View -->
+        <div id="view-theaters" style="display: none;">
+            <!-- Stats -->
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="map-pin"></i></div>
+                    <div class="stat-info">
+                        <h3 id="stat-total-theaters">-</h3>
+                        <p>Total Theaters</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #f2ff00; border-color: rgba(242,255,0,0.3);"><i data-lucide="play"></i></div>
+                    <div class="stat-info">
+                        <h3 id="stat-total-showtimes">-</h3>
+                        <p>Weekly Showtimes</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-actions" style="position: relative; z-index: 20;">
+                <h2 style="font-size: 1.5rem; margin: 0;">Manage Theaters</h2>
+                <button class="btn-primary" id="add-theater-btn" onclick="toggleAddTheaterModal()"><i data-lucide="plus"></i> Add New Theater</button>
+                
+                <!-- Add/Edit Popover (Theaters) -->
+                <div id="theater-modal" class="glass">
+                    <button class="close-modal" type="button" onclick="toggleAddTheaterModal()"><i data-lucide="x"></i></button>
+                    <h2 id="theater-form-title" style="margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;"><i data-lucide="map-pin" style="color:var(--primary); margin-right: 10px;"></i> Add Theater</h2>
+                    
+                    <form id="admin-theater-form" onsubmit="saveTheater(event)">
+                        <input type="hidden" id="theater-id">
+                        <div class="admin-form-grid">
+                            <div class="admin-form-group">
+                                <label>Theater Name</label>
+                                <input type="text" id="theater-name" placeholder="e.g. IMAX Cinema" required>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Location</label>
+                                <input type="text" id="theater-location" placeholder="e.g. Mumbai" required>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Features (Comma separated)</label>
+                                <input type="text" id="theater-features" placeholder="IMAX, Dolby Atmos" required>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Rating</label>
+                                <input type="number" id="theater-rating" placeholder="4.5" step="0.1" min="1" max="5" required>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Theater Image</label>
+                                <div class="upload-input-group">
+                                    <input type="url" id="theater-image" placeholder="Paste URL here (https://...)" oninput="updatePreview('theater')">
+                                    <div class="upload-divider">OR UPLOAD</div>
+                                    <label class="btn-upload">
+                                        <i data-lucide="upload"></i> Choose Image File
+                                        <input type="file" id="theater-file" accept="image/*" style="display: none;" onchange="handleFileUpload('theater', event)">
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="admin-form-group full" id="theater-preview-container" style="display: none; margin-top: 1rem;">
+                                <label>Image Preview</label>
+                                <img id="theater-preview-img" src="" alt="Preview" style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Showtimes (Comma separated)</label>
+                                <input type="text" id="theater-showtimes" placeholder="09:00 AM, 02:00 PM" required>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                            <button type="button" class="btn-table" onclick="toggleAddTheaterModal()" style="padding: 10px 20px;">Cancel</button>
+                            <button type="submit" id="theater-save-btn" class="btn-primary">Save Theater</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Theater</th>
+                            <th>Location</th>
+                            <th>Rating & Features</th>
+                            <th>Daily Slots</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-theater-table">
+                        <!-- Populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTheaterTable();
+            populateTheaterOptions();
+            renderAdminTable();
+        });
+
+        const defaultMoviesFallback = [
+            { id: 1, title: "Dune: Part Two", genre: "Sci-Fi", price: 350, rating: 4.8, duration: "2h 46m", director: "Denis Villeneuve", cast: ["Timothée Chalamet", "Zendaya"], description: "Paul Atreides unites with Chani...", image: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=1470&auto=format&fit=crop", hero: true, theaters: [] },
+            { id: 2, title: "Interstellar", genre: "Sci-Fi", price: 250, rating: 4.9, duration: "2h 49m", director: "Christopher Nolan", cast: ["Matthew McConaughey", "Anne Hathaway"], description: "A team of explorers travel...", image: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1472&auto=format&fit=crop", hero: true, theaters: [] },
+            { id: 3, title: "Oppenheimer", genre: "Drama", price: 300, rating: 4.7, duration: "3h 00m", director: "Christopher Nolan", cast: ["Cillian Murphy", "Emily Blunt"], description: "The story of American scientist...", image: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1470&auto=format&fit=crop", hero: true, theaters: [] },
+            { id: 4, title: "The Dark Knight", genre: "Action", price: 200, rating: 4.9, duration: "2h 32m", director: "Christopher Nolan", cast: ["Christian Bale", "Heath Ledger"], description: "When the menace known as the Joker...", image: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=1470&auto=format&fit=crop", hero: false, theaters: [] },
+            { id: 5, title: "Inception", genre: "Sci-Fi", price: 250, rating: 4.8, duration: "2h 28m", director: "Christopher Nolan", cast: ["Leonardo DiCaprio", "Joseph Gordon-Levitt"], description: "A thief who steals corporate secrets...", image: "https://images.unsplash.com/photo-1542204112-4043f6511099?q=80&w=1470&auto=format&fit=crop", hero: false, theaters: [] },
+            { id: 6, title: "John Wick", genre: "Action", price: 180, rating: 4.6, duration: "1h 41m", director: "Chad Stahelski", cast: ["Keanu Reeves", "Michael Nyqvist"], description: "An ex-hit-man comes out of retirement...", image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=1470&auto=format&fit=crop", hero: false, theaters: [] }
+        ];
+
+        const defaultTheatersFallback = [
+            { id: 1, name: "PVR: Citi Mall", location: "Mumbai", features: ["4K", "IMAX"], rating: 4.5, image: "https://images.unsplash.com/photo-1517604401871-10c929021bd0?q=80&w=1470&auto=format&fit=crop", showtimes: ["10:00 AM", "02:00 PM"] },
+            { id: 2, name: "PVR: Market City", location: "Mumbai", features: ["Dolby", "Luxury"], rating: 4.8, image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1470&auto=format&fit=crop", showtimes: ["11:00 AM", "03:00 PM"] },
+            { id: 3, name: "Movietime: The Hub", location: "Mumbai", features: ["Comfort", "Food"], rating: 4.2, image: "https://images.unsplash.com/photo-1524712245354-2c4e5e7121c0?q=80&w=1632&auto=format&fit=crop", showtimes: ["01:00 PM", "05:00 PM"] }
+        ];
+
+        function switchTab(tab) {
+            document.getElementById('view-movies').style.display = tab === 'movies' ? 'block' : 'none';
+            document.getElementById('view-theaters').style.display = tab === 'theaters' ? 'block' : 'none';
+            document.getElementById('tab-movies-link').classList.toggle('active', tab === 'movies');
+            document.getElementById('tab-theaters-link').classList.toggle('active', tab === 'theaters');
+            
+            document.getElementById('page-title').innerText = tab === 'movies' ? 'Movie Database' : 'Theater Network';
+            document.getElementById('page-desc').innerText = tab === 'movies' ? 'Add, edit, and remove movies available on the CineFlow platform.' : 'Manage your theaters, locations, and showtime slots.';
+        }
+
+        function getDBData() {
+            const raw = localStorage.getItem('cineflow_movies_data');
+            if (raw) return JSON.parse(raw);
+            localStorage.setItem('cineflow_movies_data', JSON.stringify(defaultMoviesFallback));
+            return [...defaultMoviesFallback];
+        }
+
+        function getTheaterData() {
+            const raw = localStorage.getItem('cineflow_theaters_data');
+            if (raw) return JSON.parse(raw);
+            localStorage.setItem('cineflow_theaters_data', JSON.stringify(defaultTheatersFallback));
+            return [...defaultTheatersFallback];
+        }
+
+        function getTheaterNameMap() {
+            return getTheaterData().reduce((map, theater) => {
+                map[theater.id] = theater.name;
+                return map;
+            }, {});
+        }
+
+        function populateTheaterOptions() {
+            const select = document.getElementById('movie-theaters');
+            if (!select) return;
+            const theaters = getTheaterData();
+            select.innerHTML = theaters.map(t => `<option value="${t.id}">${t.name} (${t.location})</option>`).join('');
+        }
+
+        function formatMovieTheaters(theaterIds = []) {
+            const names = theaterIds
+                .map(id => getTheaterNameMap()[id])
+                .filter(Boolean);
+            return names.length ? `Theaters: ${names.slice(0, 2).join(', ')}${names.length > 2 ? '...' : ''}` : 'No theaters assigned';
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-movie-table');
+            const data = getDBData();
+            document.getElementById('stat-total-movies').innerText = data.length;
+            document.getElementById('stat-hero-movies').innerText = data.filter(m => m.hero).length;
+
+            tbody.innerHTML = data.map(m => `
+                <tr>
+                    <td>
+                        <div class="movie-cell">
+                            <img src="${m.image}" alt="${m.title}">
+                            <div class="movie-cell-info"><h4>${m.title}</h4><p>${m.director}</p></div>
+                        </div>
+                    </td>
+                            <td>
+                        <div style="color: #fff;">${m.genre}</div>
+                        <div style="font-size: 0.8rem; color: var(--primary);">${m.mood || 'Standard'}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.3rem;">${formatMovieTheaters(m.theaters)}</div>
+                    </td>
+                    <td><div style="color: #00f2ff;">₹${m.price}</div><div style="font-size: 0.8rem; color: #ffb800;">⭐ ${m.rating}</div></td>
+                    <td>${m.hero ? '<span class="tag-hero">Hero</span>' : '<span style="color:var(--text-dim); font-size: 0.8rem;">Standard</span>'}</td>
+                    <td style="text-align: right;">
+                        <button class="btn-table" onclick="populateMovieForm(${m.id})"><i data-lucide="edit-3"></i> Edit</button>
+                        <button class="btn-table danger" onclick="deleteMovie(${m.id})"><i data-lucide="trash-2"></i> Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function renderTheaterTable() {
+            const tbody = document.getElementById('admin-theater-table');
+            const data = getTheaterData();
+            document.getElementById('stat-total-theaters').innerText = data.length;
+            document.getElementById('stat-total-showtimes').innerText = data.reduce((acc, t) => acc + t.showtimes.length, 0);
+            populateTheaterOptions();
+
+            tbody.innerHTML = data.map(t => `
+                <tr>
+                    <td>
+                        <div class="movie-cell">
+                            <img src="${t.image}" alt="${t.name}">
+                            <div class="movie-cell-info"><h4>${t.name}</h4></div>
+                        </div>
+                    </td>
+                    <td><div style="color: #fff;">${t.location}</div></td>
+                    <td><div style="color: #ffb800;">⭐ ${t.rating}</div><div style="font-size: 0.8rem; color: var(--text-dim);">${t.features.join(', ')}</div></td>
+                    <td><div style="color: var(--primary);">${t.showtimes.length} Slots</div><div style="font-size: 0.7rem; color: var(--text-dim);">${t.showtimes.slice(0, 2).join(', ')}...</div></td>
+                    <td style="text-align: right;">
+                        <button class="btn-table" onclick="populateTheaterForm(${t.id})"><i data-lucide="edit-3"></i> Edit</button>
+                        <button class="btn-table danger" onclick="deleteTheater(${t.id})"><i data-lucide="trash-2"></i> Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function toggleAddMovieModal() {
+            const modal = document.getElementById('admin-modal');
+            const isActive = modal.classList.contains('active');
+            if (!isActive) {
+                populateTheaterOptions();
+                document.getElementById('admin-movie-form').reset();
+                document.getElementById('movie-id').value = '';
+                document.getElementById('movie-preview-container').style.display = 'none';
+                document.getElementById('movie-file').value = '';
+                document.getElementById('movie-form-title').innerHTML = '<i data-lucide="film" style="color:var(--primary); margin-right: 10px;"></i> Add New Movie';
+                document.getElementById('movie-save-btn').innerText = 'Save Movie';
+                modal.classList.add('active');
+            } else {
+                modal.classList.remove('active');
+            }
+        }
+
+        function toggleAddTheaterModal() {
+            const modal = document.getElementById('theater-modal');
+            const isActive = modal.classList.contains('active');
+            if (!isActive) {
+                document.getElementById('admin-theater-form').reset();
+                document.getElementById('theater-id').value = '';
+                document.getElementById('theater-preview-container').style.display = 'none';
+                document.getElementById('theater-file').value = '';
+                document.getElementById('theater-form-title').innerHTML = '<i data-lucide="map-pin" style="color:var(--primary); margin-right: 10px;"></i> Add Theater';
+                document.getElementById('theater-save-btn').innerText = 'Save Theater';
+                modal.classList.add('active');
+            } else {
+                modal.classList.remove('active');
+            }
+        }
+
+        function saveMovie(e) {
+            e.preventDefault();
+            const data = getDBData();
+            const id = document.getElementById('movie-id').value;
+
+            // Limit check for NEW movies only
+            if (!id && data.length >= 30) {
+                alert("Database Limit Reached: You can only have a maximum of 30 movies. Please delete some existing movies before adding new ones.");
+                return;
+            }
+            
+            const movieObj = {
+                id: id ? parseInt(id) : Date.now(),
+                title: document.getElementById('movie-title').value,
+                genre: document.getElementById('movie-genre').value,
+                price: parseInt(document.getElementById('movie-price').value),
+                rating: parseFloat(document.getElementById('movie-rating').value),
+                duration: document.getElementById('movie-duration').value,
+                mood: document.getElementById('movie-mood').value,
+                director: document.getElementById('movie-director').value,
+                cast: document.getElementById('movie-cast').value.split(',').map(s => s.trim()),
+                description: document.getElementById('movie-desc').value,
+                image: document.getElementById('movie-image').value,
+                trailer: document.getElementById('movie-trailer').value,
+                theaters: Array.from(document.getElementById('movie-theaters').selectedOptions).map(o => parseInt(o.value)),
+                hero: document.getElementById('movie-hero').checked
+            };
+
+            if (id) {
+                const index = data.findIndex(m => m.id === parseInt(id));
+                data[index] = movieObj;
+            } else {
+                data.push(movieObj);
+            }
+
+            localStorage.setItem('cineflow_movies_data', JSON.stringify(data));
+            toggleAddMovieModal();
+            renderAdminTable();
+        }
+
+        function saveTheater(e) {
+            e.preventDefault();
+            const data = getTheaterData();
+            const id = document.getElementById('theater-id').value;
+            
+            const theaterObj = {
+                id: id ? parseInt(id) : Date.now(),
+                name: document.getElementById('theater-name').value,
+                location: document.getElementById('theater-location').value,
+                features: document.getElementById('theater-features').value.split(',').map(s => s.trim()),
+                rating: parseFloat(document.getElementById('theater-rating').value),
+                image: document.getElementById('theater-image').value,
+                showtimes: document.getElementById('theater-showtimes').value.split(',').map(s => s.trim())
+            };
+
+            if (id) {
+                const index = data.findIndex(t => t.id === parseInt(id));
+                data[index] = theaterObj;
+            } else {
+                data.push(theaterObj);
+            }
+
+            localStorage.setItem('cineflow_theaters_data', JSON.stringify(data));
+            toggleAddTheaterModal();
+            renderTheaterTable();
+        }
+
+        function populateMovieForm(id) {
+            const movie = getDBData().find(m => m.id === id);
+            document.getElementById('movie-id').value = movie.id;
+            document.getElementById('movie-title').value = movie.title;
+            document.getElementById('movie-genre').value = movie.genre;
+            document.getElementById('movie-price').value = movie.price;
+            document.getElementById('movie-rating').value = movie.rating;
+            document.getElementById('movie-duration').value = movie.duration;
+            document.getElementById('movie-mood').value = movie.mood || '';
+            document.getElementById('movie-director').value = movie.director;
+            document.getElementById('movie-cast').value = movie.cast.join(', ');
+            document.getElementById('movie-desc').value = movie.description;
+            document.getElementById('movie-image').value = movie.image;
+            document.getElementById('movie-trailer').value = movie.trailer || '';
+            document.getElementById('movie-hero').checked = movie.hero;
+            const theaterSelect = document.getElementById('movie-theaters');
+            Array.from(theaterSelect.options).forEach(opt => {
+                opt.selected = movie.theaters?.includes(parseInt(opt.value));
+            });
+            
+            document.getElementById('movie-form-title').innerHTML = '<i data-lucide="edit-3" style="color:var(--primary); margin-right: 10px;"></i> Edit Movie';
+            document.getElementById('movie-save-btn').innerText = 'Update Movie';
+            
+            updatePreview('movie');
+            document.getElementById('admin-modal').classList.add('active');
+        }
+
+        function populateTheaterForm(id) {
+            const theater = getTheaterData().find(t => t.id === id);
+            document.getElementById('theater-id').value = theater.id;
+            document.getElementById('theater-name').value = theater.name;
+            document.getElementById('theater-location').value = theater.location;
+            document.getElementById('theater-features').value = theater.features.join(', ');
+            document.getElementById('theater-rating').value = theater.rating;
+            document.getElementById('theater-image').value = theater.image;
+            document.getElementById('theater-showtimes').value = theater.showtimes.join(', ');
+            
+            document.getElementById('theater-form-title').innerHTML = '<i data-lucide="edit-3" style="color:var(--primary); margin-right: 10px;"></i> Edit Theater';
+            document.getElementById('theater-save-btn').innerText = 'Update Theater';
+            
+            updatePreview('theater');
+            document.getElementById('theater-modal').classList.add('active');
+        }
+
+        function updatePreview(type) {
+            const url = document.getElementById(`${type}-image`).value;
+            const container = document.getElementById(`${type}-preview-container`);
+            const img = document.getElementById(`${type}-preview-img`);
+            
+            if (url && (url.startsWith('http') || url.startsWith('https') || url.startsWith('data:image'))) {
+                img.src = url;
+                container.style.display = 'block';
+                img.onerror = () => {
+                    container.style.display = 'none';
+                };
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function handleFileUpload(type, event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const base64String = e.target.result;
+                document.getElementById(`${type}-image`).value = base64String;
+                updatePreview(type);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function deleteMovie(id) {
+            const data = getDBData().filter(m => m.id !== id);
+            if(confirm("Delete this movie permamently?")) {
+                localStorage.setItem('cineflow_movies_data', JSON.stringify(data));
+                renderAdminTable();
+            }
+        }
+
+        function deleteTheater(id) {
+            const data = getTheaterData().filter(t => t.id !== id);
+            if(confirm("Delete this theater permamently?")) {
+                localStorage.setItem('cineflow_theaters_data', JSON.stringify(data));
+                renderTheaterTable();
+            }
+        }
+
+        // Outside click listeners
+        document.addEventListener('click', (e) => {
+            const mModal = document.getElementById('admin-modal');
+            const mBtn = document.getElementById('add-movie-btn');
+            // If modal is active, click is outside modal, outside main add button, AND not on an edit/action button
+            if (mModal.classList.contains('active') && !mModal.contains(e.target) && !mBtn.contains(e.target) && !e.target.closest('.btn-table')) {
+                mModal.classList.remove('active');
+            }
+
+            const tModal = document.getElementById('theater-modal');
+            const tBtn = document.getElementById('add-theater-btn');
+            if (tModal.classList.contains('active') && !tModal.contains(e.target) && !tBtn.contains(e.target) && !e.target.closest('.btn-table')) {
+                tModal.classList.remove('active');
+            }
+        });
+    </script>
+    <script src="cursor-effect.js"></script>
+</body>
+</html>

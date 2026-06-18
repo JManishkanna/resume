@@ -1,0 +1,627 @@
+ <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theaters | CineFlow</title>
+    <meta name="description" content="Browse premium theaters near you and book movie tickets instantly on CineFlow.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+            .theater-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2.5rem;
+            padding: 0 5% 8rem;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .theater-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .theater-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 242, 255, 0.07);
+        }
+
+        .theater-img-wrap {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+        }
+
+        .theater-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .theater-card:hover .theater-img {
+            transform: scale(1.06);
+        }
+
+        .theater-img-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 40%, rgba(10, 10, 11, 0.85) 100%);
+        }
+
+        .theater-rating-badge {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: rgba(10, 10, 11, 0.7);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 198, 0, 0.3);
+            color: #ffc600;
+            border-radius: 50px;
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .theater-rating-badge i {
+            width: 13px;
+            height: 13px;
+        }
+
+        .theater-info {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .theater-info h3 {
+            font-size: 1.2rem;
+            color: var(--text-main);
+        }
+
+        .theater-location {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .theater-location i {
+            width: 14px;
+            height: 14px;
+            color: var(--primary);
+        }
+
+        .theater-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .theater-showtimes-preview {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .theater-showtimes-preview i {
+            width: 14px;
+            height: 14px;
+            color: var(--secondary);
+        }
+
+        .theater-book-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        .theater-book-btn i {
+            width: 16px;
+            height: 16px;
+        }
+
+        #theater-picker-modal .modal-content {
+            max-width: 680px;
+        }
+
+        .tpicker-header {
+            margin-bottom: 1.8rem;
+        }
+
+        .tpicker-header h2 {
+            font-size: 1.6rem;
+        }
+
+        .tpicker-header p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+
+        .tpicker-section-title {
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        #tpicker-movies {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+            max-height: 280px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .tpicker-movie-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: border-color 0.25s, background 0.25s;
+        }
+
+        .tpicker-movie-item:hover {
+            border-color: var(--primary);
+            background: rgba(0, 242, 255, 0.04);
+        }
+
+        .tpicker-movie-item.selected {
+            border-color: var(--primary);
+            background: rgba(0, 242, 255, 0.08);
+        }
+
+        .tpicker-movie-item img {
+            width: 52px;
+            height: 52px;
+            object-fit: cover;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .tpicker-movie-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex: 1;
+        }
+
+        .tpicker-genre {
+            font-size: 0.7rem;
+            color: var(--primary);
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .tpicker-movie-info strong {
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .tpicker-price {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .tpicker-check {
+            color: var(--primary);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .tpicker-check i {
+            width: 20px;
+            height: 20px;
+        }
+
+        .tpicker-movie-item.selected .tpicker-check {
+            opacity: 1;
+        }
+
+        #tpicker-times {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .tpicker-time-slot {
+            padding: 0.55rem 1.2rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: var(--text-dim);
+        }
+
+        .tpicker-time-slot:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .tpicker-time-slot.selected {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--bg-dark);
+        }
+
+        #tpicker-confirm {
+            width: 100%;
+            font-size: 1rem;
+            padding: 0.9rem;
+        }
+
+        #tpicker-confirm:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cursor-ambient" aria-hidden="true"></div>
+    <div class="cursor-glow" aria-hidden="true"></div>
+    <div class="cursor"></div>
+
+    <nav class="navbar">
+        <div class="logo">Cine<span>Flow</span></div>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="movies.html">Movies</a></li>
+            <li><a href="theaters.html" class="active">Theaters</a></li>
+            <li><a href="bookings.html">My Bookings</a></li>
+            <li><a href="rewards.html" class="rewards-link">Rewards <span class="points-badge" style="background: linear-gradient(45deg, var(--primary), var(--secondary)); color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; margin-left: 5px; box-shadow: 0 0 10px rgba(0,242,255,0.4);">0 pts</span></a></li>
+        </ul>
+        <button class="btn-primary" onclick="goToPage('login.html')">Sign In</button>
+        <div class="hamburger" id="hamburger" onclick="toggleMobileNav()">
+            <span></span><span></span><span></span>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <h1>Premium Theaters</h1>
+        <p>Choose the environment that suits your cinematic soul.</p>
+    </header>
+
+    <section class="theater-grid" id="theater-grid">
+    </section>
+
+    <div id="theater-picker-modal" class="modal">
+        <div class="modal-content glass">
+            <button class="close-modal" onclick="closeModal('theater-picker-modal')">
+                <i data-lucide="x"></i>
+            </button>
+
+            <div class="tpicker-header">
+                <h2 id="tpicker-theater-name">Theater Name</h2>
+                <p>Select a movie and showtime to continue</p>
+            </div>
+
+            <p class="tpicker-section-title">Choose a Movie</p>
+            <div id="tpicker-movies"></div>
+
+            <p class="tpicker-section-title">Choose a Showtime</p>
+            <div id="tpicker-times"></div>
+
+            <button class="btn-primary" id="tpicker-confirm" disabled onclick="confirmTheaterBooking()">
+                Proceed to Seat Selection →
+            </button>
+        </div>
+    </div>
+
+    <div id="booking-modal" class="modal">
+        <div class="modal-content glass">
+            <button class="close-modal"><i data-lucide="x"></i></button>
+            <div class="booking-container">
+                <div id="step-details" class="booking-view active">
+                    <div class="preview-bg-container">
+                        <img src="" id="preview-movie-bg" alt="bg" loading="lazy">
+                        <div class="preview-bg-overlay"></div>
+                    </div>
+                    <div class="movie-preview-content">
+                        <div class="preview-header">
+                            <h2 id="preview-movie-title">Movie Title</h2>
+                            <div class="preview-meta">
+                                <span id="preview-movie-rating"><i data-lucide="star"></i> 4.8</span>
+                                <span id="preview-movie-genre">Genre</span>
+                                <span id="preview-movie-duration"><i data-lucide="clock"></i> 2h 45m</span>
+                            </div>
+                        </div>
+                        <div class="preview-body">
+                            <div class="preview-section">
+                                <h3>About</h3>
+                                <p id="preview-movie-desc">Description</p>
+                            </div>
+                            <div class="preview-section">
+                                <h3>Trailer</h3>
+                                <div class="trailer-wrapper" style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.35);">
+                                    <iframe id="preview-movie-trailer" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
+                                </div>
+                            </div>
+                            <div class="preview-section">
+                                <h3>Cast & Crew</h3>
+                                <div class="cast-list" id="preview-movie-cast"></div>
+                                <p class="director-info"><b>Director:</b> <span id="preview-movie-director">Name</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="preview-footer">
+                            <button class="btn-primary" onclick="switchStep('step-showtimes')">Proceed to Tickets
+                                →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="step-showtimes" class="booking-view">
+                    <div class="date-selector" id="date-picker"></div>
+                    <div class="theaters-list" id="theater-list"></div>
+                </div>
+
+                <div id="step-seats" class="booking-view">
+                    <div class="seat-map-wrapper">
+                        <div class="seat-map-container" style="flex:1">
+                            <div class="screen-container">
+                                <h2 style="margin-bottom:25px;font-weight:700;text-align:center">Select your seat</h2>
+                                <div class="screen-curve"></div>
+                                <div class="screen-text">SCREEN SIDE</div>
+                            </div>
+                            <div class="smart-selection-controls">
+                                <div class="smart-input-group">
+                                    <div class="smart-label"><i data-lucide="zap"></i><span>Smart Selection</span></div>
+                                    <div class="smart-actions">
+                                        <input type="number" id="smart-seat-count" value="2" min="1" max="9">
+                                        <button class="btn-smart" onclick="triggerSmartSelect()">Auto Select Best
+                                            Seats</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="seat-sections" id="seat-sections-container"></div>
+                            <div class="legend" style="margin-top:4rem">
+                                <div class="legend-item"><span class="seat">A1</span> Available</div>
+                                <div class="legend-item"><span class="seat premium">P1</span> Premium (+₹50)</div>
+                                <div class="legend-item"><span class="seat couple">K1</span> Couple (2x Price)</div>
+                                <div class="legend-item"><span class="seat occupied"></span> Occupied</div>
+                                <div class="legend-item"><span class="seat selected">A1</span> Selected</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="booking-sidebar">
+                        <div id="selected-movie-info">
+                            <h2 id="modal-movie-title">Movie Title</h2>
+                            <p id="modal-movie-desc">Description</p>
+                            <p id="selected-theater-time" style="color:var(--primary);margin-top:10px;font-weight:600">
+                            </p>
+                        </div>
+                        <div class="addons-section">
+                            <h4>Add-ons</h4>
+                            <div class="addons-grid" style="max-height:400px;overflow-y:auto;padding-right:5px">
+                                <div class="addon-card" onclick="toggleAddon(this,150)">
+                                    <div class="addon-icon"><i data-lucide="popcorn"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Super Combo</h5>
+                                    </div>
+                                    <div class="addon-price">₹150</div><button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this,120)">
+                                    <div class="addon-icon"><i data-lucide="utensils"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Cheese Nachos</h5>
+                                    </div>
+                                    <div class="addon-price">₹120</div><button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this,90)">
+                                    <div class="addon-icon"><i data-lucide="coffee"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Cold Coffee</h5>
+                                    </div>
+                                    <div class="addon-price">₹90</div><button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this,110)">
+                                    <div class="addon-icon"><i data-lucide="sandwich"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Sandwich</h5>
+                                    </div>
+                                    <div class="addon-price">₹110</div><button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this,130)">
+                                    <div class="addon-icon"><i data-lucide="utensils"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Hot Dog</h5>
+                                    </div>
+                                    <div class="addon-price">₹130</div><button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this,70)">
+                                    <div class="addon-icon"><i data-lucide="cup-soda"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Soft Drink</h5>
+                                    </div>
+                                    <div class="addon-price">₹70</div><button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this,200)">
+                                    <div class="addon-icon"><i data-lucide="popcorn"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Popcorn Tub</h5>
+                                    </div>
+                                    <div class="addon-price">₹200</div><button class="addon-action-btn">ADD</button>
+                                </div>
+                                <div class="addon-card" onclick="toggleAddon(this,180)">
+                                    <div class="addon-icon"><i data-lucide="package"></i></div>
+                                    <div class="addon-info">
+                                        <h5>Meal Box</h5>
+                                    </div>
+                                    <div class="addon-price">₹180</div><button class="addon-action-btn">ADD</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="parking-section" style="margin-top:20px">
+                            <h4>Parking</h4>
+                            <div class="parking-options">
+                                <div class="parking-card" onclick="toggleParking(this,'Bike',30)">
+                                    <div class="parking-icon"><i data-lucide="bike"></i></div><span>Bike (₹30)</span>
+                                </div>
+                                <div class="parking-card" onclick="toggleParking(this,'Car',80)">
+                                    <div class="parking-icon"><i data-lucide="car"></i></div><span>Car (₹80)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="booking-summary">
+                            <div class="summary-row"><span>Seats:</span><span id="selected-seats-count">0</span></div>
+                            <div class="summary-row"><span>Add-ons:</span><span id="summary-addons-price">₹0</span>
+                            </div>
+                            <div class="summary-row"><span>Parking:</span><span id="summary-parking-price">₹0</span>
+                            </div>
+                            <div class="summary-row total"><span>Total:</span><span id="total-price">₹0</span></div>
+                            <div class="payment-methods" style="margin-top:20px">
+                                <h4>Payment</h4>
+                                <div class="payment-grid">
+                                    <div class="payment-option active" onclick="selectPayment(this)"><i
+                                            data-lucide="smartphone"></i><span>UPI</span></div>
+                                    <div class="payment-option" onclick="selectPayment(this)"><i
+                                            data-lucide="credit-card"></i><span>Card</span></div>
+                                    <div class="payment-option" onclick="selectPayment(this)"><i
+                                            data-lucide="landmark"></i><span>Net Banking</span></div>
+                                    <div class="payment-option" onclick="selectPayment(this)"><i
+                                            data-lucide="wallet"></i><span>Cash on Spot</span></div>
+                                </div>
+                            </div>
+                            <button class="btn-primary full-width" id="confirm-booking" style="margin-top:2rem">Proceed
+                                to Checkout →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="payment-modal" class="modal">
+        <div class="modal-content glass" style="max-width:500px">
+            <button class="close-modal" onclick="closeModal('payment-modal')"><i data-lucide="x"></i></button>
+            <div class="checkout-header">
+                <h2>Checkout</h2>
+                <p id="checkout-summary-text">Summary</p>
+            </div>
+            <div class="payment-details-container">
+                <div id="upi-form" class="payment-form active">
+                    <div class="input-group"><label>Enter UPI ID</label><input type="text" placeholder="example@upi"
+                            id="upi-id"></div>
+                </div>
+                <div id="card-form" class="payment-form">
+                    <div class="input-group"><label>Card Number</label><input type="text"
+                            id="card-number" placeholder="0000 0000 0000 0000"></div>
+                    <div class="input-row" style="display:flex;gap:1rem">
+                        <input type="text" id="card-expiry" placeholder="MM/YY" style="flex:1">
+                        <input type="password" id="card-cvv" placeholder="CVV" style="flex:1">
+                    </div>
+                </div>
+                <div id="banking-form" class="payment-form">
+                    <div class="input-group"><label>Select Bank</label>
+                        <select id="bank-select">
+                            <option value="">Choose bank</option>
+                            <option value="HDFC">HDFC Bank</option>
+                            <option value="ICICI">ICICI Bank</option>
+                            <option value="SBI">SBI</option>
+                            <option value="AXIS">Axis Bank</option>
+                        </select>
+                    </div>
+                    <div class="input-group"><label>Internet Banking User ID</label><input type="text" id="banking-user" placeholder="User ID"></div>
+                </div>
+                <div id="cash-form" class="payment-form">
+                    <div class="input-group"><p style="margin:0; color:#f0ad4e;">Please pay the amount at the counter when you arrive. Cash surcharge ₹50 per seat is applied.</p></div>
+                </div>
+            </div>
+            <div class="checkout-footer" style="margin-top:2rem">
+                <div class="final-price"><span>Payable Amount:</span>
+                    <h3 id="final-payable-amount">₹0</h3>
+                </div>
+                <button class="btn-primary full-width" id="final-pay-btn" onclick="processFinalPayment()">Pay
+                    Now</button>
+            </div>
+            <div id="payment-success" class="payment-success-view">
+                <div class="success-icon"><i data-lucide="check-circle-2"></i></div>
+                <h2>Booking Confirmed!</h2>
+                <div class="printable-ticket" id="ticket-to-print">
+                    <img src="" id="print-banner-img" alt="banner" loading="lazy">
+                    <div class="print-overlay"></div>
+                    <div class="print-content">
+                        <div class="print-left">
+                            <p class="print-tag" id="print-experience">Experience</p>
+                            <h3 class="print-title" id="print-movie-title">Movie Title</h3>
+                            <div class="print-info-grid">
+                                <div class="print-info-item"><i data-lucide="calendar"></i><span
+                                        id="print-date">Date</span></div>
+                                <div class="print-info-item"><i data-lucide="clock"></i><span
+                                        id="print-time">Time</span></div>
+                                <div class="print-info-item"><i data-lucide="map-pin"></i><span
+                                        id="print-theater">Theater</span></div>
+                            </div>
+                            <div class="print-info-grid">
+                                <div class="print-info-item"><i data-lucide="armchair"></i><span>SEATS: </span><span
+                                        id="print-seats"></span></div>
+                                <div class="print-info-item"><i data-lucide="hash"></i><span
+                                        id="print-ticket-id"></span></div>
+                            </div>
+                            <div id="print-addons-list" class="print-addons-ticket"></div>
+                        </div>
+                        <div class="print-right">
+                            <span class="status-pill">CONFIRMED</span>
+                            <div class="print-qr-container" id="print-qr"></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:1rem;margin-top:2rem">
+                    <button class="btn-primary full-width" onclick="saveTicket()"><i data-lucide="download"></i> Save
+                        Ticket</button>
+                    <button class="btn-outline full-width" onclick="location.reload()">Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">Cine<span>Flow</span></div>
+            <p>&copy; 2026 CineFlow. Designed for excellence.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="cursor-effect.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+
+</html>

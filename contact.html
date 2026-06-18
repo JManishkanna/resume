@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="2.css">
+    <title>Personal Page</title>
+</head>
+<body>
+    <header>
+  <a href="#" class="logo" style="font-family:verdana;">Manish</a>
+  <nav>
+    <a href="1.html" >Home</a>
+    <a href="resume.html" >resume</a>
+    <a href="project.html" >Projects</a>
+    <a href="contact.html" class="active">Contact</a>
+    <a href="login1.html" id="loginLink">Login</a>
+  </nav>
+</header>
+<section class="projects" id="projects">
+        <div class="section-heading">
+            <h2>Contact Me</h2>
+            <p>Feel free to reach out if you have any questions or opportunities!</p>
+        </div>
+        <div class="project-grid">
+            <article class="project-card">
+                <img src="cineflow.png" alt="Space portfolio project">
+                <h3>CineFlow</h3>
+                <p>Responsive landing page with animated components and modern space-inspired visuals.</p>
+                <a href="project 1/login.html" class="project-link">View Details</a>
+            </article>
+            <article class="project-card">
+                <img src="3d_login.png" alt="Character concept project">
+                <h3>3d login page</h3>
+                <p>Creative portfolio piece combining illustration, imagery, and polished layout choices.</p>
+                <a href="project 1/login_3d.html" class="project-link">View Details</a>
+            </article>
+            <article class="project-card">
+                <img src="images/loyy.jpg" alt="Modern project showcase">
+                <h3>Visual Showcase</h3>
+                <p>Stylish project showcase page built for performance and visual impact.</p>
+                <a href="#" class="project-link">View Details</a>
+            </article>
+        </div>
+    </section>
+    <script>
+  const loginLink = document.getElementById('loginLink');
+
+  loginLink.addEventListener('click', function(e) {
+    e.preventDefault(); 
+    document.body.classList.add('fade-out');
+    setTimeout(() => {
+      window.location.href = loginLink.href;
+    }, 500); 
+  });
+</script>
+    </body>
+</html>

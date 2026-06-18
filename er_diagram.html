@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineFlow ER Diagram</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: white;
+        }
+        .diagram-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="diagram-container">
+        <h1>CineFlow Database ER Diagram</h1>
+        <div class="mermaid">
+erDiagram
+    User ||--o{ Booking : makes
+    Movie ||--o{ Booking : "has bookings"
+    Theater ||--o{ Booking : "has bookings"
+
+    User {
+        string name
+        string email
+    }
+
+    Movie {
+        number id
+        string title
+        string genre
+        number price
+        number rating
+        string duration
+        string director
+        string[] cast
+        string description
+        string image
+        string trailer
+        boolean hero
+    }
+
+    Theater {
+        number id
+        string name
+        string location
+        string[] features
+        number rating
+        string image
+        string[] showtimes
+    }
+
+    Booking {
+        string userEmail
+        string title
+        string theater
+        string time
+        string date
+        string[] seats
+        number total
+        string[] addons
+        string parking
+        string paymentMode
+        string bookedOn
+    }
+
+    OTTPack {
+        number id
+        string name
+        number price
+        boolean featured
+        string[] features
+    }
+        </div>
+        
+        <h1>CineFlow DFD Level 1 Diagram</h1>
+        <div class="mermaid">
+graph TD
+    %% External Entities
+    A[Customer/User] -->|Login request| P5[User Management P5]
+    A -->|Browse movies| P1[Movie Management P1]
+    A -->|Browse theaters| P2[Theater Management P2]
+    A -->|Make booking| P3[Booking Management P3]
+    B[Admin] -->|Manage movies| P1
+    B -->|Manage theaters| P2
+    C[Payment Gateway] -->|Payment confirmation| P4[Payment Processing P4]
+    
+    %% Subprocesses
+    P1 -->|Movie data| D[(Movie Database)]
+    P2 -->|Theater data| E[(Theater Database)]
+    P3 -->|Booking data| F[(Booking Database)]
+    P5 -->|User data| G[(User Database)]
+    
+    %% Data Flows between processes
+    P1 -->|Movie list| A
+    P2 -->|Theater list| A
+    P3 -->|Available seats| A
+    P5 -->|Auth status| A
+    
+    A -->|Booking details| P3
+    P3 -->|Payment request| P4
+    P4 -->|Payment status| P3
+    P3 -->|Booking confirmation| A
+    
+    %% Data Store Connections
+    D -->|Movie info| P1
+    E -->|Theater info| P2
+    F -->|Booking records| P3
+    G -->|User profiles| P5
+    
+    P1 -->|Update movies| D
+    P2 -->|Update theaters| E
+    P3 -->|Store booking| F
+    P5 -->|Update users| G
+        </div>
+    </div>
